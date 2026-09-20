@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오늘의 QT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tabbar-h:62px;
+  --ink:#17202B; --sub:#5C6875; --faint:#8D98A4;
+  --paper:#FFFFFF; --mist:#EDF0F4; --line:#DFE4EA;
+  --bronze:#94713F; --bronze-soft:#F3EDE2;
+  --dawn:#1E2A3A; --dawn-2:#2C3C50;
+  --scroll:#FBF8F3;
+  --ok:#3F6B52;
+  --r:14px;
+  --sans:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --serif:'Noto Serif KR',Georgia,'Apple SD Gothic Neo',serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#E6EAEF; --sub:#A2AEBB; --faint:#7A8695;
+    --paper:#151C25; --mist:#0D131A; --line:#28323E;
+    --bronze:#C9A468; --bronze-soft:#241E14;
+    --dawn:#0F1620; --dawn-2:#1A2634;
+    --scroll:#12181F; --ok:#7FB295;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E6EAEF; --sub:#A2AEBB; --faint:#7A8695;
+  --paper:#151C25; --mist:#0D131A; --line:#28323E;
+  --bronze:#C9A468; --bronze-soft:#241E14;
+  --dawn:#0F1620; --dawn-2:#1A2634;
+  --scroll:#12181F; --ok:#7FB295;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--mist); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit}
+img{max-width:100%}
+
+/* ---- shell ---- */
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);
+  position:relative;overflow-x:hidden;
+  box-shadow:0 0 0 1px var(--line);}
+.screen{display:none;padding-bottom:calc(var(--tabbar-h, 62px) + 24px)}
+.screen.on{display:block}
+.pad{padding:0 20px}
+
+/* ---- top bar ---- */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 20px 12px;}
+.brand{font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand span{color:var(--bronze)}
+.iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  color:var(--sub);font-size:17px}
+.iconbtn:hover{background:var(--mist)}
+
+/* ---- home hero ---- */
+.hero{padding:6px 20px 26px}
+.greet{font-size:14px;color:var(--sub)}
+.datebig{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:-.02em;margin:2px 0 22px}
+.passage-card{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper)}
+.pc-row{padding:16px 18px}
+.pc-row + .pc-row{border-top:1px solid var(--line)}
+.pc-label{font-size:12px;color:var(--bronze);font-weight:700;letter-spacing:.02em}
+.pc-main{font-family:var(--serif);font-size:25px;font-weight:700;line-height:1.35;margin-top:4px;letter-spacing:-.02em}
+.pc-sub{font-size:13px;color:var(--faint);margin-top:5px}
+.pc-row.dawn{background:var(--bronze-soft)}
+.pc-row.dawn .pc-main{font-size:22px}
+
+.cta{display:block;width:100%;margin:18px 0 0;padding:17px;border-radius:var(--r);
+  background:var(--dawn);color:#F5F1E9;font-weight:700;font-size:16.5px;text-align:center;
+  transition:transform .12s ease}
+.cta:active{transform:scale(.985)}
+.cta.done{background:var(--ok)}
+
+.stat-strip{display:flex;gap:10px;margin-top:12px}
+.stat{flex:1;border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.stat b{font-family:var(--serif);font-size:20px;display:block;line-height:1.2}
+.stat i{font-style:normal;font-size:12px;color:var(--faint)}
+
+.sec{padding:26px 20px 0}
+.sec-h{font-family:var(--serif);font-weight:700;font-size:16px;margin:0 0 12px;
+  display:flex;align-items:baseline;justify-content:space-between}
+.sec-h em{font-style:normal;font-size:12.5px;color:var(--faint);font-family:var(--sans);font-weight:400}
+
+.verse{border-left:3px solid var(--bronze);padding:4px 0 4px 16px}
+.verse p{font-family:var(--serif);font-size:16.5px;line-height:1.85;margin:0 0 8px;letter-spacing:-.01em}
+.verse cite{font-style:normal;font-size:13px;color:var(--bronze);font-weight:700}
+
+.notice{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:14px;color:var(--sub)}
+
+/* ---- tabbar ---- */
+.tabbar{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  background:color-mix(in srgb,var(--paper) 96%,transparent);
+  backdrop-filter:saturate(150%) blur(12px);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);z-index:75}
+.tab{padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;color:var(--faint)}
+.tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--bronze);font-weight:700}
+.tabbar.kb-hide{display:none}   /* 입력 중(키보드가 떠 있는 동안)에는 잠시 감춘다 */
+
+/* ---- QT focus screen ---- */
+#qt{position:fixed;inset:0;z-index:60;background:var(--scroll);
+  max-width:520px;margin:0 auto;overflow-y:auto;display:none}
+#qt.on{display:block}
+.qt-top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;
+  background:var(--dawn);color:#EFE9DD;
+  padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
+.qt-top button{color:#EFE9DD;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:16px}
+.qt-top button:disabled{opacity:.3}
+.qt-title{flex:1;text-align:center;font-size:14.5px;font-weight:500;letter-spacing:.01em}
+.qt-body{padding:0 22px calc(var(--tabbar-h, 62px) + 24px)}
+.qt-date{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--bronze);
+  padding:26px 0 0;letter-spacing:-.01em}
+.qt-read{margin:16px 0 0}
+.qt-kicker{font-size:11.5px;font-weight:700;color:var(--bronze);letter-spacing:.04em}
+.qt-range{font-family:var(--serif);font-weight:700;font-size:30px;line-height:1.28;
+  letter-spacing:-.03em;margin:5px 0 0}
+.qt-dawn{margin-top:22px;padding:18px 0 0;border-top:1px solid var(--line)}
+.qt-dawn .qt-range{font-size:25px}
+.scripture{margin-top:16px;font-family:var(--serif);font-size:17.5px;line-height:2.05;
+  letter-spacing:-.01em;white-space:pre-wrap}
+.scripture.empty{font-family:var(--sans);font-size:13.5px;line-height:1.7;color:var(--faint);
+  border:1px dashed var(--line);border-radius:var(--r);padding:14px 16px;white-space:normal}
+.guide{margin:26px 0 0;background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:18px}
+.guide h4{margin:0 0 9px;font-size:13px;color:var(--bronze);font-weight:700}
+.guide p{margin:0 0 10px;font-size:15.5px;line-height:1.8;color:var(--ink)}
+.guide p:last-child{margin-bottom:0}
+.hr{height:1px;background:var(--line);margin:30px 0}
+.field{margin-bottom:22px}
+.field label{display:block;font-family:var(--serif);font-weight:700;font-size:16px;margin-bottom:4px}
+.field .hint{font-size:13px;color:var(--faint);margin-bottom:9px}
+textarea{width:100%;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--paper);padding:15px;resize:vertical;line-height:1.85;
+  font-family:var(--serif);font-size:16.5px;letter-spacing:-.01em}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-offset:1px;border-color:transparent}
+#reflection{min-height:190px}
+#prayer{min-height:110px}
+
+.shares{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper)}
+.share-opt{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;cursor:pointer}
+.share-opt + .share-opt{border-top:1px solid var(--line)}
+.share-opt input{margin:4px 0 0;accent-color:var(--bronze);width:17px;height:17px;flex:none}
+.share-opt b{display:block;font-weight:500;font-size:15px}
+.share-opt small{color:var(--faint);font-size:12.5px;line-height:1.5;display:block;margin-top:2px}
+.share-opt.sel{background:var(--bronze-soft)}
+
+.donecheck{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--line);
+  border-radius:var(--r);margin:22px 0 14px;cursor:pointer}
+.donecheck input{width:21px;height:21px;accent-color:var(--ok)}
+.donecheck b{font-weight:500}
+.savebar{padding:24px 0 6px}
+.saved-note{text-align:center;font-size:12.5px;color:var(--faint);margin-top:9px;min-height:18px}
+
+/* ---- lists / community ---- */
+.post{border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;margin-bottom:12px}
+.post-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ava{width:32px;height:32px;border-radius:50%;background:var(--bronze-soft);color:var(--bronze);
+  display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;
+  font-family:var(--serif)}
+.post-h b{font-size:14.5px;font-weight:500}
+.post-h small{color:var(--faint);font-size:12px;display:block;line-height:1.3}
+.post-ref{font-size:12.5px;color:var(--bronze);font-weight:700;margin-bottom:6px}
+.post-body{font-family:var(--serif);font-size:16px;line-height:1.85;white-space:pre-wrap;letter-spacing:-.01em}
+.post-acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.act{font-size:13px;color:var(--sub);padding:6px 12px;border:1px solid var(--line);border-radius:999px}
+.act.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.cmt{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}
+.cmt-item{font-size:14px;margin-bottom:7px;line-height:1.6}
+.cmt-item b{font-weight:700;margin-right:6px;font-size:13.5px}
+.cmt-form{display:flex;gap:7px;margin-top:9px}
+.cmt-form input{flex:1;border:1px solid var(--line);border-radius:999px;padding:9px 15px;
+  background:var(--paper);font-size:14px}
+.cmt-form button{padding:0 16px;border-radius:999px;background:var(--dawn);color:#F0EBE1;font-size:13.5px;font-weight:700}
+.completed-strip{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+.chip{font-size:13px;padding:6px 12px;border-radius:999px;background:var(--mist);color:var(--sub);
+  border:1px solid transparent}
+.chip.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.filter-note{display:none;align-items:center;justify-content:space-between;gap:8px;
+  background:var(--bronze-soft);border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--bronze)}
+.filter-note button{font-size:12.5px;font-weight:700;text-decoration:underline;color:var(--bronze)}
+.chip b{color:var(--ok);margin-left:4px}
+
+/* ---- 묵상 나눔(카카오톡 등) ---- */
+.cell.pickable{cursor:pointer}
+.cell.sel{outline:2px solid var(--bronze);background:var(--bronze-soft);color:var(--bronze);font-weight:700}
+.selbar{position:fixed;left:12px;right:12px;bottom:calc(var(--tabbar-h, 62px) + 10px);max-width:496px;
+  margin:0 auto;background:var(--dawn);color:#F2EDE4;display:none;align-items:center;
+  justify-content:space-between;gap:10px;padding:13px 16px;z-index:74;border-radius:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.selbar.on{display:flex}
+.selbar b{font-size:13.5px;font-weight:500}
+.selbar .sbtns{display:flex;gap:7px;flex:none}
+.selbar button{padding:9px 14px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.selbar .go{background:#F2EDE4;color:var(--dawn)}
+.selbar .cancel{background:transparent;color:#F2EDE4;border:1px solid rgba(255,255,255,.35)}
+
+/* ---- bible ---- */
+.seg{display:flex;gap:6px;background:var(--mist);padding:4px;border-radius:11px;margin-bottom:16px}
+.seg button{flex:1;padding:9px;border-radius:8px;font-size:14px;color:var(--sub);font-weight:500}
+.seg button.on{background:var(--paper);color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.booklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bookbtn{border:1px solid var(--line);border-radius:10px;padding:13px 6px;font-size:14px;text-align:center}
+.bookbtn:hover{border-color:var(--bronze)}
+.chapgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.chapbtn{border:1px solid var(--line);border-radius:9px;padding:11px 0;font-size:14px;text-align:center;
+  font-family:var(--serif)}
+
+/* ---- calendar ---- */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-head b{font-family:var(--serif);font-size:18px}
+.cal-head button{width:34px;height:34px;border-radius:9px;color:var(--sub);border:1px solid var(--line)}
+.cal-head button:disabled{opacity:.35}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{text-align:center;font-size:11px;color:var(--faint);padding-bottom:6px}
+.cal .dow.sun{color:#B4544C}
+.cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;font-size:13px;color:var(--sub)}
+.cell.blank{visibility:hidden}
+.cell.has{background:var(--bronze-soft);color:var(--bronze);font-weight:700}
+.cell.today{outline:1.5px solid var(--dawn);outline-offset:-1.5px}
+.cell .dot{width:4px;height:4px;border-radius:50%;background:var(--bronze)}
+
+/* ---- my page ---- */
+.profile{display:flex;align-items:center;gap:14px;padding:6px 0 20px}
+.profile .ava{width:54px;height:54px;font-size:19px}
+.profile b{font-family:var(--serif);font-size:19px;display:block}
+.profile small{color:var(--faint);font-size:13px}
+.week-dots{display:flex;gap:7px;margin-top:10px}
+.wd{flex:1;text-align:center}
+.wd span{display:block;font-size:11px;color:var(--faint);margin-bottom:5px}
+.wd i{display:block;height:30px;border-radius:8px;background:var(--mist);
+  display:grid;place-items:center;font-style:normal;font-size:13px;color:var(--faint)}
+.wd i.on{background:var(--ok);color:#fff}
+.menu{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:18px}
+.menu button{display:flex;width:100%;justify-content:space-between;align-items:center;
+  padding:15px 16px;font-size:15px;text-align:left}
+.menu button + button{border-top:1px solid var(--line)}
+.menu button span{color:var(--faint);font-size:13px}
+
+/* ---- 배지 · 트로피 ---- */
+.badgegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.badge{border:1px solid var(--line);border-radius:12px;padding:13px 5px 11px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:6px}
+.badge .ic{font-size:21px;filter:grayscale(1);opacity:.3}
+.badge.on{background:var(--bronze-soft);border-color:var(--bronze)}
+.badge.on .ic{filter:none;opacity:1}
+.badge span{font-size:10.5px;color:var(--faint);line-height:1.3}
+.badge.on span{color:var(--ink);font-weight:500}
+.bookbadges{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.bbadge{border:1px solid var(--line);border-radius:8px;padding:9px 2px;text-align:center;
+  font-size:11px;color:var(--faint)}
+.bbadge.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.trophystrip{display:flex;gap:9px;overflow-x:auto;padding-bottom:2px}
+.trophy{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;
+  border:1px solid var(--line);border-radius:12px;padding:13px 17px;background:var(--paper)}
+.trophy .ic{font-size:23px}
+.trophy span{font-size:10.5px;color:var(--sub);white-space:nowrap}
+
+/* ---- 배지 자랑(나눔) ---- */
+.cheerstrip{display:none;gap:8px;overflow-x:auto;padding:2px 0 16px;margin-bottom:2px}
+.cheer-chip{flex:none;display:flex;align-items:center;gap:7px;background:var(--bronze-soft);
+  border:1px solid var(--line);border-radius:999px;padding:8px 13px 8px 10px;font-size:12px;white-space:nowrap}
+.cheer-chip .ic{font-size:16px}
+.cheer-chip b{font-weight:700}
+.cheer-chip .cnt{color:var(--bronze);font-weight:700}
+.cheer-chip.mine{outline:1.5px solid var(--bronze)}
+
+/* ---- auth / modal ---- */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(10,14,20,.5);
+  display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet-in{background:var(--paper);width:100%;max-width:520px;border-radius:20px 20px 0 0;
+  padding:24px 22px calc(26px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+.sheet-in h3{font-family:var(--serif);font-size:20px;margin:0 0 6px}
+.sheet-in p.lede{color:var(--sub);font-size:14px;margin:0 0 20px;line-height:1.65}
+.inp{width:100%;border:1px solid var(--line);border-radius:11px;padding:14px 15px;
+  background:var(--paper);font-size:16px;margin-bottom:11px}
+.btn{width:100%;padding:15px;border-radius:11px;background:var(--dawn);color:#F2EDE4;
+  font-weight:700;font-size:15.5px;text-align:center;margin-top:5px}
+.btn.ghost{background:transparent;color:var(--sub);font-weight:500;border:1px solid var(--line)}
+.err{color:#B4544C;font-size:13.5px;min-height:19px;margin:2px 0 0}
+.empty{text-align:center;color:var(--faint);font-size:14px;padding:44px 20px;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--dawn);color:#F2EDE4;padding:11px 20px;border-radius:999px;font-size:14px;
+  z-index:100;opacity:0;pointer-events:none;transition:opacity .22s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
+.scroll-x{overflow-x:auto}
+
+/* ---- 접이식 본문 ---- */
+.fold{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);margin-top:15px}
+.fold > summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;font-size:14px;font-weight:500;color:var(--sub)}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary b{color:var(--ink);font-weight:500}
+.arw{color:var(--faint);font-size:11px;transition:transform .18s ease;display:inline-block}
+.fold[open] .arw{transform:rotate(180deg)}
+.fold-in{padding:2px 17px 19px;margin-top:-2px}
+.vs{font-family:var(--serif);font-size:17px;line-height:1.95;letter-spacing:-.012em}
+.vs p{margin:0 0 7px}
+.vs .vn{font-family:var(--sans);font-size:11.5px;font-weight:700;color:var(--bronze);
+  margin-right:6px;vertical-align:.1em}
+.vs .ch{display:block;font-family:var(--sans);font-size:11.5px;font-weight:700;
+  color:var(--faint);letter-spacing:.04em;margin:22px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
+.vs .ch:first-child{margin-top:0;padding-top:0;border-top:none}
+.vs .ti{display:block;font-weight:700;font-size:15.5px;margin:18px 0 8px;line-height:1.5}
+.vs .ti:first-child{margin-top:0}
+.fold .note{font-family:var(--sans);font-size:13.5px;line-height:1.7;color:var(--faint)}
+.prog{height:5px;background:var(--mist);border-radius:99px;overflow:hidden;margin:12px 0 4px;display:none}
+.prog.on{display:block}
+.prog i{display:block;height:100%;width:0;background:var(--bronze);transition:width .25s ease}
+.filebtn{display:block;width:100%;border:1px dashed var(--bronze);border-radius:11px;padding:18px 16px;
+  text-align:center;font-size:15px;font-weight:700;color:var(--bronze);cursor:pointer;margin-bottom:8px;
+  background:var(--bronze-soft);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.filebtn small{display:block;font-weight:400;font-size:12px;color:var(--faint);margin-top:4px}
+.fileok{font-size:13px;color:var(--ok);margin:0 0 11px;min-height:17px}
+.inappwarn{display:none;background:#F7E7C4;color:#6B4E12;border-radius:11px;padding:13px 14px;
+  font-size:13px;line-height:1.7;margin-bottom:14px}
+:root[data-theme="dark"] .inappwarn{background:#3A2E12;color:#E9C97A}
+.inappwarn.on{display:block}
+.inappwarn b{display:block;margin-bottom:3px}
+.guide .ask{border-left:2px solid var(--bronze);padding-left:13px;margin:14px 0 0;color:var(--ink)}
+.guide .ask small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:700;
+  color:var(--bronze);margin-bottom:3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ 홈 ══ -->
+  <section class="screen on" id="s-home">
+    <div class="topbar">
+      <div class="brand">우리교회 <span>QT</span></div>
+      <button class="iconbtn" onclick="go('my')" aria-label="마이페이지">☰</button>
+    </div>
+    <div class="hero">
+      <div class="greet" id="greet"></div>
+      <div class="datebig" id="homeDate"></div>
+      <div class="passage-card">
+        <div class="pc-row">
+          <div class="pc-label">리딩지저스</div>
+          <div class="pc-main" id="homeRead"></div>
+          <div class="pc-sub" id="homeReadSub"></div>
+        </div>
+        <div class="pc-row dawn">
+          <div class="pc-label">새벽본문</div>
+          <div class="pc-main" id="homeDawn"></div>
+          <div class="pc-sub" id="homeDawnSub"></div>
+        </div>
+      </div>
+      <button class="cta" id="homeCta" onclick="openQT(todayStr())">오늘의 QT 시작하기</button>
+      <div class="stat-strip">
+        <div class="stat"><b id="statDone">0</b><i>오늘 QT를 마친 교인</i></div>
+        <div class="stat" onclick="tabGo('log')" style="cursor:pointer"><b id="statMine">0일</b><i>이번 달 나의 QT</i></div>
+      </div>
+    </div>
+    <div class="sec">
+      <h3 class="sec-h">이번 주 암송구절 <em id="weekRangeLabel"></em></h3>
+      <div class="verse"><p id="memVerse"></p><cite id="memRef"></cite></div>
+    </div>
+    <div class="sec">
+      <h3 class="sec-h">알림</h3>
+      <div class="notice" id="homeNotice"></div>
+    </div>
+  </section>
+
+  <!-- ══ 성경 ══ -->
+  <section class="screen" id="s-bible">
+    <div class="topbar"><div class="brand">성경</div></div>
+    <div class="pad">
+      <div id="bibleNav"></div>
+      <div id="bibleView"></div>
+    </div>
+  </section>
+
+  <!-- ══ 나눔 ══ -->
+  <section class="screen" id="s-share">
+    <div class="topbar">
+      <div class="brand">공동체 나눔</div>
+    </div>
+    <div class="pad">
+      <div class="cal-head" style="margin-bottom:16px">
+        <button onclick="shareRangeMove(-1)" aria-label="이전 주">‹</button>
+        <b id="shareRangeLabel"></b>
+        <button onclick="shareRangeMove(1)" id="shareNextBtn" aria-label="다음 주">›</button>
+      </div>
+      <div class="cheerstrip" id="cheerStrip"></div>
+      <h3 class="sec-h" style="margin-top:8px">이번 주 QT를 함께한 사람들 <em id="shareCount"></em></h3>
+      <div class="completed-strip" id="doneChips"></div>
+      <div class="filter-note" id="shareFilterNote" style="display:none">
+        <span></span><button onclick="setShareFilter(null)">전체보기</button>
+      </div>
+      <div id="shareFeed"></div>
+    </div>
+  </section>
+
+  <!-- ══ 기록 ══ -->
+  <section class="screen" id="s-log">
+    <div class="topbar"><div class="brand">QT 기록</div></div>
+    <div class="pad">
+      <div class="cal-head">
+        <button onclick="calMove(-1)" aria-label="이전 달">‹</button>
+        <b id="calLabel"></b>
+        <button onclick="calMove(1)" aria-label="다음 달">›</button>
+      </div>
+      <button class="act" id="selToggle" style="margin-bottom:14px" onclick="toggleSelectMode()">여러 날짜 골라 카카오톡으로 공유</button>
+      <div class="cal" id="cal"></div>
+      <div id="logDetail" style="margin-top:22px"></div>
+    </div>
+  </section>
+
+  <div class="selbar" id="selBar">
+    <b id="selCount">0일 선택됨</b>
+    <div class="sbtns">
+      <button class="cancel" onclick="toggleSelectMode()">취소</button>
+      <button class="go" onclick="shareSelected()">공유하기</button>
+    </div>
+  </div>
+
+  <!-- ══ 마이 ══ -->
+  <section class="screen" id="s-my">
+    <div class="topbar"><div class="brand">마이페이지</div></div>
+    <div class="pad">
+      <div class="profile">
+        <div class="ava" id="myAva">?</div>
+        <div><b id="myName">손님</b><small id="mySub"></small></div>
+      </div>
+      <h3 class="sec-h">이번 주</h3>
+      <div class="week-dots" id="weekDots"></div>
+      <div class="stat-strip" style="margin-top:16px">
+        <div class="stat"><b id="myMonth">0 / 0</b><i>이번 달 완료</i></div>
+        <div class="stat"><b id="myRate">0%</b><i>완료율</i></div>
+        <div class="stat"><b id="myStreak">0일</b><i>연속 기록</i></div>
+      </div>
+      <button class="cta" style="margin-top:16px" onclick="tabGo('log')">📅 나의 QT 기록 보기</button>
+      <button class="btn ghost" style="margin-top:10px" onclick="inviteFriends()">🔗 초대 링크 복사·공유</button>
+
+      <h3 class="sec-h" style="margin-top:26px">나의 배지</h3>
+      <div class="badgegrid" id="badgeGrid"></div>
+
+      <details class="fold" style="margin-top:14px">
+        <summary><b>성경 완독 배지 (66권)</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="bookbadges" id="bookBadgeGrid"></div></div>
+      </details>
+
+      <h3 class="sec-h" style="margin-top:24px">트로피</h3>
+      <div class="trophystrip" id="trophyStrip"></div>
+
+      <div class="menu" style="margin-top:26px">
+        <button onclick="openSheet('sheet-auth')"><b id="authMenuLabel">로그인 / 회원가입</b><span>›</span></button>
+        <button onclick="toggleTheme()">화면 테마<span id="themeLabel">시스템</span></button>
+        <button onclick="openSheet('sheet-admin')" id="adminMenuBtn" style="display:none">관리자<span>일정 · 본문 · 설명</span></button>
+        <button onclick="doLogout()">로그아웃<span>›</span></button>
+      </div>
+      <p style="font-size:12.5px;color:var(--faint);line-height:1.7;margin:20px 0 0">
+        비공개로 저장한 묵상과 기도제목은 이 기기 안에만 남습니다. 공동체 나눔을 선택한 내용만 교회 서버에 저장됩니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ 하단 탭 ══ -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab on" data-r="home" onclick="tabGo('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>홈</button>
+    <button class="tab" data-r="qtjump" onclick="openQT(todayStr())">
+      <svg viewBox="0 0 24 24"><path d="M12 6.5S9.5 4 4 4v14c5.5 0 8 2.5 8 2.5s2.5-2.5 8-2.5V4c-5.5 0-8 2.5-8 2.5Z"/><path d="M12 6.5v14"/></svg>오늘의 QT</button>
+    <button class="tab" data-r="bible" onclick="tabGo('bible')">
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>성경</button>
+    <button class="tab" data-r="share" onclick="tabGo('share')">
+      <svg viewBox="0 0 24 24"><path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.2"/><path d="M22 20v-2a4 4 0 0 0-3-3.8"/><path d="M16.5 4.2a4 4 0 0 1 0 5.6"/></svg>나눔</button>
+    <button class="tab" data-r="my" onclick="tabGo('my')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>MY</button>
+  </nav>
+</div>
+
+<!-- ══ QT 집중 화면 ══ -->
+<div id="qt">
+  <div class="qt-top">
+    <button onclick="closeQT()" aria-label="뒤로">←</button>
+    <div class="qt-title" id="qtTitle">오늘의 QT</div>
+    <button onclick="stepQT(-1)" aria-label="이전 날">‹</button>
+    <button onclick="stepQT(1)" id="qtNext" aria-label="다음 날">›</button>
+  </div>
+  <div class="qt-body">
+    <div class="qt-date" id="qtDate"></div>
+    <div class="qt-read">
+      <div class="qt-kicker">리딩지저스 · 오늘 읽을 말씀</div>
+      <div class="qt-range" id="qtRead"></div>
+      <div class="pc-sub" id="qtReadSub"></div>
+      <details class="fold" id="foldRead" open>
+        <summary><b id="sumRead">본문 읽기</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="vs" id="qtReadText"></div></div>
+      </details>
+    </div>
+    <div class="qt-dawn">
+      <div class="qt-kicker">새벽본문 · 오늘 묵상할 말씀</div>
+      <div class="qt-range" id="qtDawn"></div>
+      <details class="fold" id="foldDawn" open>
+        <summary><b id="sumDawn">본문 읽기</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="vs" id="qtScripture"></div></div>
+      </details>
+    </div>
+    <div class="guide">
+      <h4>오늘의 QT 설명</h4>
+      <div id="qtGuide"></div>
+    </div>
+    <div class="hr"></div>
+    <div class="field">
+      <label for="reflection">묵상</label>
+      <div class="hint">오늘 말씀을 통해 하나님은 어떤 분이신지, 내게 무엇을 말씀하시는지 자유롭게 적어보세요.</div>
+      <textarea id="reflection" placeholder="자유롭게 작성해주세요"></textarea>
+    </div>
+    <div class="field">
+      <label for="prayer">기도제목</label>
+      <div class="hint">오늘 하나님께 드리고 싶은 기도를 적어보세요.</div>
+      <textarea id="prayer" placeholder="한 줄이어도 괜찮습니다"></textarea>
+    </div>
+    <div class="field">
+      <label>공동체와 나누기</label>
+      <div class="hint">언제든지 다시 바꿀 수 있습니다.</div>
+      <div class="shares" id="shareOpts">
+        <label class="share-opt"><input type="radio" name="share" value="PRIVATE" checked>
+          <span><b>나누지 않기</b><small>이 기기에만 저장됩니다. 다른 교인에게 보이지 않습니다.</small></span></label>
+        <label class="share-opt"><input type="radio" name="share" value="COMPLETION_ONLY">
+          <span><b>QT를 했다는 것만 나누기</b><small>묵상 내용은 감추고 이름과 완료 표시만 보입니다.</small></span></label>
+        <label class="share-opt"><input type="radio" name="share" value="CONTENT">
+          <span><b>나의 묵상 내용을 나누기</b><small>묵상 글이 나눔 게시판에 올라갑니다. 기도제목은 따로 선택합니다.</small></span></label>
+      </div>
+      <label class="donecheck" id="prayerShareWrap" style="display:none">
+        <input type="checkbox" id="sharePrayer"><b>기도제목도 함께 나누기</b></label>
+    </div>
+    <label class="donecheck"><input type="checkbox" id="isDone"><b>오늘 QT 완료</b></label>
+    <div class="savebar">
+      <button class="cta" onclick="saveQT()">저장하기</button>
+      <div class="saved-note" id="savedNote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 로그인 시트 ══ -->
+<div class="sheet" id="sheet-auth" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-in">
+    <h3 id="authTitle">교회 QT 시작하기</h3>
+    <p class="lede">이름과 별명, 4자리 비밀번호만 있으면 됩니다. 나눔 게시판에는 별명이 표시됩니다.</p>
+    <div class="seg" style="margin-bottom:18px">
+      <button id="tabSignup" class="on" onclick="authMode('signup')">회원가입</button>
+      <button id="tabLogin" onclick="authMode('login')">로그인</button>
+    </div>
+    <input class="inp" id="auName" placeholder="이름 (예: 전근식)" autocomplete="name">
+    <input class="inp" id="auNick" placeholder="별명 (나눔에 표시됩니다)" autocomplete="username">
+    <input class="inp" id="auPin" placeholder="숫자 4자리" inputmode="numeric" maxlength="4" autocomplete="current-password">
+    <div class="err" id="auErr"></div>
+    <button class="btn" id="auGo" onclick="doAuth()">가입하고 시작하기</button>
+    <button class="btn ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<!-- ══ 관리자 시트 ══ -->
+<div class="sheet" id="sheet-admin" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-in">
+    <h3>관리자</h3>
+
+    <h4 style="font-size:15.5px;margin:2px 0 4px">홈 화면 알림</h4>
+    <p class="lede">교인들이 홈 화면에서 보는 공지입니다. 시작·종료를 비워두면 상시 알림으로, 둘 다 채우면 그 기간에만 보입니다.</p>
+    <textarea class="inp" id="adNotice" style="min-height:90px" placeholder="예: 이번 주 특별새벽기도회는 오전 6시에 시작합니다"></textarea>
+    <div style="display:flex;gap:8px">
+      <input class="inp" type="datetime-local" id="adNoticeFrom" style="flex:1;font-size:13.5px">
+      <input class="inp" type="datetime-local" id="adNoticeTo" style="flex:1;font-size:13.5px">
+    </div>
+    <div style="font-size:12px;color:var(--faint);margin:-6px 0 11px">왼쪽: 시작 시각 · 오른쪽: 종료 시각 (선택)</div>
+    <div class="err" id="noticeErr"></div>
+    <button class="btn" onclick="saveNotice()">알림 저장</button>
+
+    <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">날짜별 QT 콘텐츠</h4>
+    <p class="lede">리딩지저스 일정은 교회 핸드북에서 자동으로 불러옵니다. 아래에서 그날의 설명과 본문을 직접 넣거나 고칠 수 있습니다.</p>
+    <input class="inp" type="date" id="adDate" onchange="loadAdmin()">
+    <input class="inp" id="adRead" placeholder="리딩지저스 본문 (예: 창 1-4)">
+    <input class="inp" id="adDawn" placeholder="새벽본문 (예: 창 3:1-13)">
+    <textarea class="inp" id="adText" style="min-height:130px" placeholder="새벽본문 전문을 붙여넣으면 QT 화면에 그대로 보입니다"></textarea>
+    <textarea class="inp" id="adExp" style="min-height:130px" placeholder="오늘의 QT 설명 (3~5문장). 비워두면 자동 생성된 안내문이 보입니다"></textarea>
+    <input class="inp" id="adVerse" placeholder="이주의 암송구절 (예: 딤후 3:15)">
+    <div class="err" id="adErr"></div>
+    <button class="btn" onclick="saveAdmin()">콘텐츠 저장</button>
+
+    <div style="border-top:1px solid var(--line);margin:26px 0 0;padding-top:22px">
+      <h3 style="font-size:17px">성경 본문 불러오기</h3>
+      <p class="lede" id="bibleStatus">교회가 사용 허락을 받은 성경 텍스트 파일을 한 번만 올리면, 이후 모든 교인 화면에 본문이 자동으로 표시됩니다.</p>
+      <div class="inappwarn" id="inAppWarn">
+        <b>지금 카카오톡(또는 앱) 브라우저 안에서 열려 있는 것 같습니다.</b>
+        이 상태에서는 파일을 선택할 수 없습니다. 오른쪽 위 <b>···</b> 또는 <b>⋮</b> 메뉴에서
+        “다른 브라우저로 열기” / “Safari로 열기”를 눌러 다시 시도해주세요.
+      </div>
+      <button type="button" class="filebtn" id="fileBtn">📄 텍스트 파일 선택<small>.txt 파일을 찾아서 눌러주세요</small></button>
+      <input type="file" id="bibleFile" accept=".txt,text/plain,text/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+      <div class="fileok" id="fileOk"></div>
+      <input class="inp" id="bibleVer" placeholder="역본 이름 (예: 개역개정4판)">
+      <div class="prog" id="bibleProgWrap"><i id="bibleProg"></i></div>
+      <div class="err" id="bibleErr"></div>
+      <button class="btn" onclick="importBible()">불러와서 올리기</button>
+      <button class="btn ghost" id="resumeBtn" style="display:none" onclick="resumeUpload()">이어서 올리기</button>
+    </div>
+    <button class="btn ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════ 성경 책 정보 · 리딩지저스 일정 ══════════ */
+const BOOKS=[{"a":"창","n":"창세기","c":50,"g":"율법서","d":"세상과 사람의 시작, 그리고 하나님이 한 가정을 부르시는 이야기"},{"a":"출","n":"출애굽기","c":40,"g":"율법서","d":"종살이하던 백성을 건져내시고 언약 백성으로 세우시는 이야기"},{"a":"레","n":"레위기","c":27,"g":"율법서","d":"거룩하신 하나님 앞에 어떻게 나아가야 하는지를 다루는 예배 규례"},{"a":"민","n":"민수기","c":36,"g":"율법서","d":"광야를 지나는 백성의 여정과 하나님의 인도하심"},{"a":"신","n":"신명기","c":34,"g":"율법서","d":"약속의 땅을 앞두고 다시 들려주시는 언약의 말씀"},{"a":"수","n":"여호수아","c":24,"g":"역사서","d":"약속하신 땅에 들어가는 백성과 신실하신 하나님"},{"a":"삿","n":"사사기","c":21,"g":"역사서","d":"돌아섬과 구원이 반복되는 시대, 그 가운데 일하시는 하나님"},{"a":"룻","n":"룻기","c":4,"g":"역사서","d":"평범한 일상 속에 숨어 있는 하나님의 섭리"},{"a":"삼상","n":"사무엘상","c":31,"g":"역사서","d":"왕을 구한 백성과 마음을 보시는 하나님"},{"a":"삼하","n":"사무엘하","c":24,"g":"역사서","d":"다윗의 왕국, 그리고 죄와 은혜가 교차하는 삶"},{"a":"왕상","n":"열왕기상","c":22,"g":"역사서","d":"성전과 왕국, 그리고 갈라지는 마음"},{"a":"왕하","n":"열왕기하","c":25,"g":"역사서","d":"기울어가는 나라 가운데서도 말씀하시는 하나님"},{"a":"대상","n":"역대상","c":29,"g":"역사서","d":"예배 공동체의 관점에서 다시 기록한 이스라엘의 계보와 역사"},{"a":"대하","n":"역대하","c":36,"g":"역사서","d":"성전 중심의 역사, 회개와 회복의 반복"},{"a":"스","n":"에스라","c":10,"g":"역사서","d":"포로에서 돌아와 다시 예배를 세우는 이야기"},{"a":"느","n":"느헤미야","c":13,"g":"역사서","d":"무너진 성벽과 무너진 마음을 함께 세우는 이야기"},{"a":"에","n":"에스더","c":10,"g":"역사서","d":"이름이 드러나지 않아도 일하시는 하나님의 손길"},{"a":"욥","n":"욥기","c":42,"g":"시가서","d":"이유를 알 수 없는 고난 앞에서 하나님을 만나는 이야기"},{"a":"시","n":"시편","c":150,"g":"시가서","d":"기쁨과 탄식, 찬양과 부르짖음을 그대로 담아낸 기도의 책"},{"a":"잠","n":"잠언","c":31,"g":"시가서","d":"하나님을 경외하는 것에서 시작되는 삶의 지혜"},{"a":"전","n":"전도서","c":12,"g":"시가서","d":"해 아래 모든 것의 허무함과 그 너머를 보게 하는 말씀"},{"a":"아","n":"아가","c":8,"g":"시가서","d":"사랑의 노래로 그려낸 언약의 깊이"},{"a":"사","n":"이사야","c":66,"g":"선지서","d":"심판 가운데서도 위로와 구원을 약속하시는 말씀"},{"a":"렘","n":"예레미야","c":52,"g":"선지서","d":"돌이키라 부르시는 눈물의 외침"},{"a":"애","n":"예레미야애가","c":5,"g":"선지서","d":"무너진 자리에서 드리는 탄식, 그러나 끊이지 않는 긍휼"},{"a":"겔","n":"에스겔","c":48,"g":"선지서","d":"떠나셨던 영광이 다시 돌아오는 환상"},{"a":"단","n":"다니엘","c":12,"g":"선지서","d":"낯선 땅에서도 흔들리지 않는 믿음과 역사를 주관하시는 하나님"},{"a":"호","n":"호세아","c":14,"g":"선지서","d":"돌아선 백성을 끝까지 사랑하시는 하나님의 마음"},{"a":"욜","n":"요엘","c":3,"g":"선지서","d":"지금 마음을 찢고 돌아오라는 부르심"},{"a":"암","n":"아모스","c":9,"g":"선지서","d":"예배와 삶이 따로 가지 않도록 붙드시는 말씀"},{"a":"옵","n":"오바댜","c":1,"g":"선지서","d":"교만한 자를 낮추시고 공의를 세우시는 하나님"},{"a":"욘","n":"요나","c":4,"g":"선지서","d":"내가 원하지 않는 자리에서도 일하시는 하나님"},{"a":"미","n":"미가","c":7,"g":"선지서","d":"정의와 인자, 겸손히 하나님과 함께 걷는 삶"},{"a":"나","n":"나훔","c":3,"g":"선지서","d":"강한 것처럼 보이는 것들의 끝을 보여주는 말씀"},{"a":"합","n":"하박국","c":3,"g":"선지서","d":"이해되지 않는 상황에서도 믿음으로 사는 법"},{"a":"습","n":"스바냐","c":3,"g":"선지서","d":"심판 너머에 남겨두신 남은 자의 소망"},{"a":"학","n":"학개","c":2,"g":"선지서","d":"미뤄둔 일을 다시 시작하라는 부르심"},{"a":"슥","n":"스가랴","c":14,"g":"선지서","d":"환상으로 보여주시는 회복과 오실 왕"},{"a":"말","n":"말라기","c":4,"g":"선지서","d":"형식만 남은 예배를 돌아보게 하는 마지막 말씀"},{"a":"마","n":"마태복음","c":28,"g":"복음서","d":"약속하신 왕으로 오신 예수님"},{"a":"막","n":"마가복음","c":16,"g":"복음서","d":"쉬지 않고 일하시는 종으로 오신 예수님"},{"a":"눅","n":"누가복음","c":24,"g":"복음서","d":"낮은 자리의 사람들을 찾아오신 예수님"},{"a":"요","n":"요한복음","c":21,"g":"복음서","d":"믿고 생명을 얻게 하려고 기록된 복음"},{"a":"행","n":"사도행전","c":28,"g":"역사서","d":"성령이 이끄시는 교회의 시작과 확장"},{"a":"롬","n":"로마서","c":16,"g":"서신서","d":"복음이 무엇이며 어떻게 사람을 새롭게 하는지"},{"a":"고전","n":"고린도전서","c":16,"g":"서신서","d":"흔들리는 공동체에게 전하는 십자가의 지혜"},{"a":"고후","n":"고린도후서","c":13,"g":"서신서","d":"약함 가운데 드러나는 하나님의 능력"},{"a":"갈","n":"갈라디아서","c":6,"g":"서신서","d":"복음에 무엇도 더하지 말라는 권면"},{"a":"엡","n":"에베소서","c":6,"g":"서신서","d":"그리스도 안에서 하나 된 교회의 부르심"},{"a":"빌","n":"빌립보서","c":4,"g":"서신서","d":"어떤 형편에서도 기뻐할 수 있는 이유"},{"a":"골","n":"골로새서","c":4,"g":"서신서","d":"모든 것 위에 뛰어나신 그리스도"},{"a":"살전","n":"데살로니가전서","c":5,"g":"서신서","d":"다시 오실 주님을 기다리는 성도의 일상"},{"a":"살후","n":"데살로니가후서","c":3,"g":"서신서","d":"흔들리지 말고 굳게 서라는 권면"},{"a":"딤전","n":"디모데전서","c":6,"g":"서신서","d":"교회를 세워가는 이들에게 주는 지침"},{"a":"딤후","n":"디모데후서","c":4,"g":"서신서","d":"끝까지 말씀을 지키라는 마지막 당부"},{"a":"딛","n":"디도서","c":3,"g":"서신서","d":"믿는 대로 살아내는 삶의 질서"},{"a":"몬","n":"빌레몬서","c":1,"g":"서신서","d":"복음이 관계를 바꾸어놓는 짧은 편지"},{"a":"히","n":"히브리서","c":13,"g":"서신서","d":"더 나은 언약, 더 나은 제사장이신 예수님"},{"a":"약","n":"야고보서","c":5,"g":"서신서","d":"행함으로 드러나는 믿음"},{"a":"벧전","n":"베드로전서","c":5,"g":"서신서","d":"고난 가운데서도 소망을 잃지 않는 삶"},{"a":"벧후","n":"베드로후서","c":3,"g":"서신서","d":"진리를 분별하며 굳게 서는 믿음"},{"a":"요일","n":"요한일서","c":5,"g":"서신서","d":"하나님은 사랑이시며 우리는 그 사랑 안에 거한다"},{"a":"요이","n":"요한이서","c":1,"g":"서신서","d":"진리 안에서 서로 사랑하라는 권면"},{"a":"요삼","n":"요한삼서","c":1,"g":"서신서","d":"작은 섬김이 교회를 세운다"},{"a":"유","n":"유다서","c":1,"g":"서신서","d":"믿음의 도를 위해 힘써 싸우라는 권면"},{"a":"계","n":"요한계시록","c":22,"g":"예언서","d":"마지막까지 다스리시는 어린양, 그리고 새 하늘과 새 땅"}];
+const WEEKS=[{"s":"2025-12-29","v":"시 118:24","t":"이 날은 여호와께서 정하신 것이라 이 날에 우리가 즐거워하고 기뻐하리로다","l":"","d":[["",""],["",""],["",""],["",""],["",""],["",""]]},{"s":"2026-01-05","v":"딤후 3:15","t":"또 어려서부터 성경을 알았나니 성경은 능히 너로 하여금 그리스도 예수 안에 있는 믿음으로 말미암아 구원에이르는 지혜가 있게 하느니라","l":"","d":[["창 1-4","창 3:1-13"],["창 5-8","창 6:1-8"],["창 9-12","창 12:1-9"],["창 13-16","창 16:5-16"],["창 17-20","창 18:1-15"],["창 21-24","창 22:9-19"]]},{"s":"2026-01-12","v":"딤후 3:16","t":"모든 성경은 하나님의 감동으로 된 것으로 교훈과 책망과 바르게 함과 의로 교육하기에 유익하니","l":"","d":[["창 25-28","창 28:10-22"],["창 29-32","창 32:24-32"],["창 33-36","창 33:1-11"],["창 37-40","창 37:1-11"],["창 41-45","창 41:37-45"],["창 46-50","창 50:15-21"]]},{"s":"2026-01-19","v":"히 4:12","t":"하나님의 말씀은 살아 있고 활력이 있어 좌우에 날선 어떤 검보다도 예리하여 혼과 영과 및 관절을 찔러 쪼개기까지 하며 또 마음의 생각과 뜻을 판단하나니","l":"","d":[["출 1-6","출 3:1-12"],["출 7-12","출 12:1-14"],["출 13-19","출 14:10-25"],["출 20-26","출 24:1-11"],["출 27-33","출 29:33-46"],["출 34-40","출 34:1-9"]]},{"s":"2026-01-26","v":"요 5:39","t":"너희가 성경에서 영생을 얻는 줄 생각하고 성경을 연구하거니와 이 성경이 곧 내게 대하여 증언하는 것이니라","l":"","d":[["레 1-5","레 1:1-9"],["레 6-10","레 10:1-7"],["레 11-15","레 11:39-46"],["레 16-20","레 19:11-18"],["레 21-25","레 21:16-24"],["레 26-27","레 26:3-13"]]},{"s":"2026-02-02","v":"시 19:7","t":"여호와의 율법은 완전하여 영혼을 소성시키며 여호와의 증거는 확실하여 우둔한 자를 지혜롭게 하며","l":"","d":[["민 1-6","민 6:22-27"],["민 7-12","민 9:15-23"],["민 13-18","민 14:11-20"],["민 19-24","민 21:4-9"],["민 25-30","민 27:1-11"],["민 31-36","민 35:1-15"]]},{"s":"2026-02-09","v":"시 19:8","t":"여호와의 교훈은 정직하여 마음을 기쁘게 하고 여호와의 계명은 순결하여 눈을 밝게 하시도다","l":"","d":[["신 1-6","신 6:1-9"],["신 7-12","신 10:12-22"],["신 13-18","신 15:1-11"],["신 19-24","신 19:1-10"],["신 25-29","신 26:1-11"],["신 30-34","신 30:1-10"]]},{"s":"2026-02-16","v":"요 20:31","t":"오직 이것을 기록함은 너희로 예수께서 하나님의 아들 그리스도이심을 믿게 하려 함이요 또 너희로 믿고 그 이름을 힘입어 생명을 얻게 하려 함이니라","l":"리딩지저스 복습기간","d":[["","시 8:1-9"],["","시 13:1-6"],["","시 18:1-6"],["","시 25:1-7"],["","시 39:1-9"],["","시 42:1-5"]]},{"s":"2026-02-23","v":"시119:9","t":"청년이 무엇으로 그의 행실을 깨끗하게 하리이까 주의 말씀만 지킬 따름이니이다","l":"","d":[["수 1-4","수 1:1-9"],["수 5-8","수 6:12-21"],["수 9-12","수 11:16-23"],["수 13-16","수 14:6-15"],["수 17-20","수 18:1-7"],["수 21-24","수 24:14-21"]]},{"s":"2026-03-02","v":"시 119:11","t":"내가 주께 범죄하지 아니하려 하여 주의 말씀을 내 마음에 두었나이다","l":"","d":[["삿 1-4","삿 2:16-23"],["삿 5-8","삿 7:1-8"],["삿 9-12","삿 11:34-40"],["삿 13-16","삿 16:23-31"],["삿 17-21","삿 17:1-13"],["룻 1-4","룻 1:11-18"]]},{"s":"2026-03-09","v":"민 23:19","t":"하나님은 사람이 아니시니 거짓말을 하지 않으시고 인생이 아니시니 후회가 없으시도다 어찌 그 말씀하신 바를 행하지 않으시며 하신 말씀을 실행하지 않으시랴","l":"","d":[["삼상 1-5","삼상 2:1-11"],["삼상 6-10","삼상 8:1-9"],["삼상 11-15","삼상 15:17-23"],["삼상 16-20","삼상 17:41-49"],["삼상 21-25","삼상 24:8-15"],["삼상 26-31","삼상 27:1-7"]]},{"s":"2026-03-16","v":"갈 6:10","t":"그러므로 우리는 기회 있는 대로 모든 이에게 착한 일을 하되 더욱 믿음의 가정들에게 할지니라","l":"","d":[["삼하 1-4","삼하 2:1-7"],["삼하 5-8","삼하 6:16-23"],["삼하 9-12","삼하 12:7-15"],["삼하 13-16","삼하 15:13-23"],["삼하 17-20","삼하 18:24-33"],["삼하 21-24","삼하 22:1-9"]]},{"s":"2026-03-23","v":"롬 3:23","t":"모든 사람이 죄를 범하였으매 하나님의 영광에 이르지 못하더니","l":"","d":[["왕상 1-4","왕상 3:4-15"],["왕상 5-7","왕상 6:1-13"],["왕상 8-10","왕상 9:1-9"],["왕상 11-14","왕상 12:25-33"],["왕상 15-18","왕상 18:30-40"],["왕상 19-22","왕상 19:1-9"]]},{"s":"2026-03-30","v":"롬 12:1","t":"그러므로 형제들아 내가 하나님의 모든 자비하심으로 너희를 권하노니 너희 몸을 하나님이 기뻐하시는 거룩한 산 제물로 드리라 이는 너희가 드릴 영적 예배니라","l":"고난주간 특별새벽기도회","d":[["",""],["",""],["",""],["",""],["",""],["",""]]},{"s":"2026-04-06","v":"롬 12:2","t":"너희는 이 세대를 본받지 말고 오직 마음을 새롭게 함으로 변화를 받아 하나님의 선하시고 기뻐하시고 온전하신 뜻이 무엇인지 분별하도록 하라","l":"","d":[["왕하 1-4","왕하 2:1-11"],["왕하 5-8","왕하 5:20-27"],["왕하 9-12","왕하 12:4-16"],["왕하 13-16","왕하 16:10-20"],["왕하 17-20","왕하 19:14-19"],["왕하 21-25","왕하 22:3-13"]]},{"s":"2026-04-13","v":"요일 5:12","t":"아들이 있는 자에게는 생명이 있고 하나님의 아들이 없는 자에게는 생명이 없느니라","l":"","d":[["대상 1-5","대상 4:1-10"],["대상 6-10","대상 10:7-14"],["대상 11-15","대상 13:1-8"],["대상 16-20","대상 17:7-15"],["대상 21-25","대상 21:1-8"],["대상 26-29","대상 28:5-10"]]},{"s":"2026-04-20","v":"빌 2:6","t":"그는 근본 하나님의 본체시나 하나님과 동등됨을 취할 것으로 여기지 아니하시고","l":"","d":[["대하 1-6","대하 6:34-42"],["대하 7-12","대하 11:13-17"],["대하 13-18","대하 13:1-12"],["대하 19-24","대하 20:14-23"],["대하 25-30","대하 30:13-22"],["대하 31-36","대하 32:1-8"]]},{"s":"2026-04-27","v":"빌 2:7","t":"오히려 자기를 비워 종의 형체를 가지사 사람들과 같이 되셨고","l":"","d":[["스 1-5","스 3:8-13"],["스 6-10","스 9:1-7"],["느 1-6","느 1:1-11"],["느 7-13","느 8:5-12"],["에 1-5","에 4:7-17"],["에 6-10","에 8:1-8"]]},{"s":"2026-05-04","v":"빌 2:8","t":"사람의 모양으로 나타나사 자기를 낮추시고 죽기까지 복종하셨으니 곧 십자가에 죽으심이라","l":"","d":[["욥 1-7","욥 2:1-10"],["욥 8-14","욥 14:7-17"],["욥 15-21","욥 18:13-22"],["욥 22-28","욥 28:12-28"],["욥 29-35","욥 35:1-16"],["욥 36-42","욥 40:1-14"]]},{"s":"2026-05-11","v":"요일 4:7","t":"사랑하는 자들아 우리가 서로 사랑하자 사랑은 하나님께 속한 것이니 사랑하는 자마다 하나님으로부터 나서 하나님을 알고","l":"리딩지저스 복습기간","d":[["","시 53:1-6"],["","시 61:1-8"],["","시 66:8-20"],["","시 77:1-12"],["","시 84:1-12"],["","시 86:1-7"]]},{"s":"2026-05-18","v":"요일 4:8","t":"사랑하지 아니하는 자는 하나님을 알지 못하나니 이는 하나님은 사랑이심이라","l":"","d":[["시 1-6","시 1:1-6"],["시 7-12","시 12:1-8"],["시 13-18","시 14:1-7"],["시 19-24","시 23:1-6"],["시 25-30","시 27:1-14"],["시 31-36","시 32:1-11"]]},{"s":"2026-05-25","v":"요일 4:11","t":"사랑하는 자들아 하나님이 이같이 우리를 사랑하셨은즉 우리도 서로 사랑하는 것이 마땅하도다","l":"","d":[["시 37-42","시 40:1-10"],["시 43-48","시 46:1-11"],["시 49-54","시 51:1-13"],["시 55-60","시 58:1-11"],["시 61-66","시 62:1-12"],["시 67-72","시 70:1-5"]]},{"s":"2026-06-01","v":"막 10:45","t":"인자가 온 것은 섬김을 받으려 함이 아니라 도리어 섬기려 하고 자기 목숨을 많은 사람의 대속물로 주려 함이니라","l":"","d":[["시 73-78","시 75:1-10"],["시 79-84","시 82:1-8"],["시 85-90","시 90:1-17"],["시 91-96","시 95:1-11"],["시 97-102","시 101:1-8"],["시 103-109","시 103:1-15"]]},{"s":"2026-06-08","v":"요 1:3","t":"만물이 그로 말미암아 지은 바 되었으니 지은 것이 하나도 그가 없이는 된 것이 없느니라","l":"","d":[["시 110-115","시 112:1-10"],["시 116-120","시 119:81-88"],["시 121-125","시 121:1-8"],["시 126-130","시 128:1-6"],["시 131-140","시 140:1-13"],["시 141-150","시 144:1-15"]]},{"s":"2026-06-15","v":"마 1:21","t":"아들을 낳으리니 이름을 예수라 하라 이는 그가 자기 백성을 그들의 죄에서 구원할 자이심이라 하니라","l":"","d":[["잠 1-5","잠 3:1-10"],["잠 6-10","잠 10:1-11"],["잠 11-15","잠 15:1-7"],["잠 16-20","잠 16:1-9"],["잠 21-25","잠 22:22-29"],["잠 26-31","잠 27:1-6"]]},{"s":"2026-06-22","v":"요 1:14","t":"말씀이 육신이 되어 우리 가운데 거하시매 우리가 그의 영광을 보니 아버지의 독생자의 영광이요 은혜와 진리가 충만하더라","l":"교회학교 여름사역을 위한 특별새벽기도회","d":[["",""],["",""],["",""],["",""],["",""],["",""]]},{"s":"2026-06-29","v":"요일 4:2","t":"이로써 너희가 하나님의 영을 알지니 곧 예수 그리스도께서 육체로 오신 것을 시인하는 영마다 하나님께 속한것이요","l":"","d":[["전 1-3","전 3:1-15"],["전 4-6","전 5:10-20"],["전 7-9","전 7:8-14"],["전 10-12","전 11:9-12:8"],["아 1-4","아 2:1-14"],["아 5-8","아 5:1-8"]]},{"s":"2026-07-06","v":"요 12:24","t":"내가 진실로 진실로 너희에게 이르노니 한 알의 밀이 땅에 떨어져 죽지 아니하면 한 알 그대로 있고 죽으면 많은 열매를 맺느니라","l":"","d":[["사 1-5","사 1:10-20"],["사 6-10","사 6:1-13"],["사 11-15","사 11:1-9"],["사 16-20","사 19:16-25"],["사 21-25","사 25:1-8"],["사 26-30","사 27:7-13"]]},{"s":"2026-07-13","v":"롬 15:2","t":"우리 각 사람이 이웃을 기쁘게 하되 선을 이루고 덕을 세우도록 할지니라","l":"","d":[["사 31-36","사 35:1-10"],["사 37-42","사 42:1-9"],["사 43-48","사 48:1-11"],["사 49-54","사 53:4-12"],["사 55-60","사 55:6-13"],["사 61-66","사 61:1-9"]]},{"s":"2026-07-20","v":"요 15:7","t":"너희가 내 안에 거하고 내 말이 너희 안에 거하면 무엇이든지 원하는 대로 구하라 그리하면 이루리라","l":"","d":[["렘 1-5","렘 5:1-9"],["렘 6-10","렘 9:23-26"],["렘 11-15","렘 15:10-21"],["렘 16-20","렘 20:7-13"],["렘 21-25","렘 23:1-8"],["렘 26-30","렘 27:1-11"]]},{"s":"2026-07-27","v":"요 14:21","t":"나의 계명을 지키는 자라야 나를 사랑하는 자니 나를 사랑하는 자는 내 아버지께 사랑을 받을 것이요 나도 그를 사랑하여 그에게 나를 나타내리라","l":"","d":[["렘 31-35","렘 31:31-34"],["렘 36-40","렘 36:27-32"],["렘 41-45","렘 42:1-6"],["렘 46-50","렘 50:11-20"],["렘 51-52","렘 52:24-34"],["애 1-5","애 1:1-9"]]},{"s":"2026-08-03","v":"히 2:18","t":"그가 시험을 받아 고난을 당하셨은즉 시험 받는 자들을 능히 도우실 수 있느니라","l":"리딩지저스 복습기간","d":[["","시 97:1-12"],["","시 116:1-10"],["","시 119:113-120"],["","시 124:1-8"],["","시 127:1-5"],["","시 130:1-8"]]},{"s":"2026-08-10","v":"요일 5:13","t":"내가 하나님의 아들의 이름을 믿는 너희에게 이것을 쓰는 것은 너희로 하여금 너희에게 영생이 있음을 알게 하려 함이라","l":"","d":[["겔 1-4","겔 3:16-21"],["겔 5-8","겔 8:5-13"],["겔 9-12","겔 11:14-21"],["겔 13-16","겔 16:53-63"],["겔 17-20","겔 18:23-32"],["겔 21-24","겔 22:23-31"]]},{"s":"2026-08-17","v":"롬 5:8","t":"우리가 아직 죄인 되었을 때에 그리스도께서 우리를 위하여 죽으심으로 하나님께서 우리에 대한 자기의 사랑을 확증하셨느니라","l":"","d":[["겔 25-28","겔 28:11-19"],["겔 29-32","겔 30:20-26"],["겔 33-36","겔 36:22-31"],["겔 37-40","겔 37:1-10"],["겔 41-44","겔 43:1-12"],["겔 45-48","겔 45:1-8"]]},{"s":"2026-08-24","v":"롬 1:17","t":"복음에는 하나님의 의가 나타나서 믿음으로 믿음에 이르게 하나니 기록된 바 오직 의인은 믿음으로 말미암아 살리라 함과 같으니라","l":"","d":[["단 1-4","단 3:13-18"],["단 5-8","단 6:13-24"],["단 9-12","단 9:13-19"],["호 1-5","호 2:14-23"],["호 6-10","호 6:1-11"],["호 11-14","호 9:10-17"]]},{"s":"2026-08-31","v":"롬 8:1","t":"그러므로 이제 그리스도 예수 안에 있는 자에게는 결코 정죄함이 없나니","l":"","d":[["욜 1-암 3","욜 2:12-17"],["암 4-9","암 5:18-27"],["옵 1-욘 4","욘 4:5-11"],["미 1-7","미 6:6-16"],["나 1-합 3","합 2:1-14"],["습 1-3","습 3:14-20"]]},{"s":"2026-09-07","v":"롬 8:2","t":"이는 그리스도 예수 안에 있는 생명의 성령의 법이 죄와 사망의 법에서 너를 해방하였음이라","l":"","d":[["학 1-2","학 1:7-15"],["슥 1-5","슥 3:1-10"],["슥 6-10","슥 8:1-8"],["슥 11-14","슥 12:1-9"],["말 1-2","말 2:1-9"],["말 3-4","말 3:7-12"]]},{"s":"2026-09-14","v":"롬 8:30","t":"또 미리 정하신 그들을 또한 부르시고 부르신 그들을 또한 의롭다 하시고 의롭다 하신 그들을 또한 영화롭게하셨느니라","l":"","d":[["마 1-3","마 3:1-12"],["마 4-6","마 5:43-48"],["마 7-9","마 7:15-27"],["마 10-12","마 10:24-33"],["마 13-15","마 13:36-43"],["마 16-18","마 16:21-28"]]},{"s":"2026-09-21","v":"엡 1:4","t":"곧 창세 전에 그리스도 안에서 우리를 택하사 우리로 사랑 안에서 그 앞에 거룩하고 흠이 없게 하시려고","l":"","d":[["","시 139:1-12"],["","시 141:1-10"],["","시 145:14-21"],["","시 149:1-9"],["","잠 1:7-19"],["","잠 6:6-11"]]},{"s":"2026-09-28","v":"계 3:20","t":"볼지어다 내가 문 밖에 서서 두드리노니 누구든지 내 음성을 듣고 문을 열면 내가 그에게로 들어가 그와 더불어 먹고 그는 나와 더불어 먹으리라","l":"","d":[["마 19-21","마 19:16-22"],["마 22-24","마 24:38-47"],["마 25-28","마 26:36-46"],["막 1-5","막 2:23-28"],["막 6-10","막 7:14-23"],["막 11-16","막 14:3-9"]]},{"s":"2026-10-05","v":"롬 6:3","t":"무릇 그리스도 예수와 합하여 세례를 받은 우리는 그의 죽으심과 합하여 세례를 받은 줄을 알지 못하느냐","l":"","d":[["눅 1-4","눅 4:21-30"],["눅 5-8","눅 6:39-45"],["눅 9-12","눅 10:25-37"],["눅 13-16","눅 15:21-32"],["눅 17-20","눅 18:9-14"],["눅 21-24","눅 21:29-36"]]},{"s":"2026-10-12","v":"행 4:12","t":"다른 이로써는 구원을 받을 수 없나니 천하 사람 중에 구원을 받을 만한 다른 이름을 우리에게 주신 일이 없음이라 하였더라","l":"","d":[["요 1-4","요 4:19-26"],["요 5-8","요 8:31-40"],["요 9-12","요 10:7-18"],["요 13-16","요 14:15-24"],["요 17-19","요 17:20-26"],["요 20-21","요 20:24-29"]]},{"s":"2026-10-19","v":"롬 1:16","t":"내가 복음을 부끄러워하지 아니하노니 이 복음은 모든 믿는 자에게 구원을 주시는 하나님의 능력이 됨이라 먼저는 유대인에게요 그리고 헬라인에게로다","l":"","d":[["행 1-3","행 1:1-11"],["행 4-5","행 5:33-42"],["행 6-8","행 8:1-8"],["행 9-10","행 9:1-9"],["행 11-13","행 11:11-18"],["행 14-15","행 15:22-31"]]},{"s":"2026-10-26","v":"롬 6:23","t":"죄의 삯은 사망이요 하나님의 은사는 그리스도 예수 우리 주 안에 있는 영생이니라","l":"리딩지저스 복습기간 / 가을 특별새벽기도회","d":[["",""],["",""],["",""],["",""],["",""],["",""]]},{"s":"2026-11-02","v":"요 5:24","t":"내가 진실로 진실로 너희에게 이르노니 내 말을 듣고 또 나 보내신 이를 믿는 자는 영생을 얻었고 심판에 이르지 아니하나니 사망에서 생명으로 옮겼느니라","l":"","d":[["행 16-18","행 16:6-10"],["행 19-20","행 20:17-25"],["행 21-22","행 22:12-21"],["행 23-24","행 24:14-23"],["행 25-26","행 25:24-32"],["행 27-28","행 28:23-31"]]},{"s":"2026-11-09","v":"눅 9:23","t":"또 무리에게 이르시되 아무든지 나를 따라오려거든 자기를 부인하고 날마다 제 십자가를 지고 나를 따를 것이니라","l":"","d":[["롬 1-3","롬 1:18-27"],["롬 4-6","롬 6:6-14"],["롬 7-8","롬 8:1-9"],["롬 9-11","롬 10:9-15"],["롬 12-14","롬 12:3-13"],["롬 15-16","롬 15:1-7"]]},{"s":"2026-11-16","v":"고후 5:17","t":"그런즉 누구든지 그리스도 안에 있으면 새로운 피조물이라 이전 것은 지나갔으니 보라 새 것이 되었도다","l":"","d":[["고전 1-4","고전 1:20-31"],["고전 5-8","고전 8:6-13"],["고전 9-12","고전 12:12-25"],["고전 13-16","고전 13:8-13"],["고후 1-3","고후 1:3-11"],["고후 4-6","고후 5:17-21"]]},{"s":"2026-11-23","v":"요 1:12","t":"영접하는 자 곧 그 이름을 믿는 자들에게는 하나님의 자녀가 되는 권세를 주셨으니","l":"","d":[["고후 7-9","고후 9:1-8"],["고후 10-13","고후 12:1-10"],["갈 1-6","갈 5:16-26"],["엡 1-3","엡 2:1-10"],["엡 4-6","엡 5:1-9"],["빌 1-4","빌 1:12-21"]]},{"s":"2026-11-30","v":"수 1:5","t":"네 평생에 너를 능히 대적할 자가 없으리니 내가 모세와 함께 있었던 것 같이 너와 함께 있을 것임이니라 내가 너를 떠나지 아니하며 버리지 아니하리니","l":"","d":[["골 1-4","골 3:1-11"],["살전 1-5","살전 5:12-22"],["살후 1-3","살후 3:6-15"],["딤전 1-6","딤전 6:3-10"],["딤후 1-4","딤후 3:14-21"],["딛 -몬","딛 3:3-11"]]},{"s":"2026-12-07","v":"엡 1:5","t":"그 기쁘신 뜻대로 우리를 예정하사 예수 그리스도로 말미암아 자기의 아들들이 되게 하셨으니","l":"","d":[["히 1-3","히 3:1-11"],["히 4-6","히 5:1-10"],["히 7-9","히 9:23-28"],["히 10-13","히 13:1-8"],["약 1-3","약 1:19-27"],["약 4-5","약 4:1-10"]]},{"s":"2026-12-14","v":"약 2:26","t":"영혼 없는 몸이 죽은 것 같이 행함이 없는 믿음은 죽은 것이니라","l":"","d":[["벧전 1-5","벧전 3:8-17"],["벧후 1-3","벧후 1:3-11"],["요일 1-3","요일 3:13-20"],["요일 4-5","요일 5:4-12"],["요이 -요삼","요이 1:4-11"],["유다서","유 1:17-23"]]},{"s":"2026-12-21","v":"고전 15:58","t":"그러므로 내 사랑하는 형제들아 견실하며 흔들리지 말고 항상 주의 일에 더욱 힘쓰는 자들이 되라 이는 너희수고가 주 안에서 헛되지 않은 줄 앎이라","l":"","d":[["계 1-4","계 1:4-8"],["계 5-8","계 5:1-8"],["계 9-12","계 10:5-11"],["계 13-15","계 13:11-18"],["계 16-18","계 16:8-15"],["계 19-22","계 22:16-21"]]}];
+
+const ABBR = {}, FULL = {};
+BOOKS.forEach(b => { ABBR[b.a] = b; FULL[b.n] = b; });
+
+/* ══════════ 날짜 유틸 ══════════ */
+const DOW = ['일','월','화','수','목','금','토'];
+const pad = n => String(n).padStart(2,'0');
+const ymd = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
+function todayStr(){ return ymd(new Date()); }
+function korDate(s){ const d=parse(s); return (d.getMonth()+1)+'월 '+d.getDate()+'일 '+DOW[d.getDay()]+'요일'; }
+function korDateShort(s){ const d=parse(s); return (d.getMonth()+1)+'/'+d.getDate(); }
+function addDays(s,n){ const d=parse(s); d.setDate(d.getDate()+n); return ymd(d); }
+
+/* 일정 인덱스: 날짜 → {read, dawn, verse, verseText, label} */
+const DAYS = {};
+WEEKS.forEach(w => {
+  let d = parse(w.s);
+  w.d.forEach(pair => {
+    DAYS[ymd(d)] = { read:pair[0], dawn:pair[1], verse:w.v, verseText:w.t, label:w.l, week:w.s };
+    d.setDate(d.getDate()+1);
+  });
+});
+const FIRST = WEEKS[0].s, LAST = Object.keys(DAYS).sort().slice(-1)[0];
+
+function daySchedule(date){
+  return DAYS[date] || { read:'', dawn:'', verse:'', verseText:'', label:'주일', week:'' };
+}
+function isSunday(date){ return parse(date).getDay() === 0; }
+
+/* ══════════ 본문 표기 → 사람이 읽는 말 ══════════ */
+/* 한국어 조사 처리 */
+function hasJong(w){
+  const c = String(w).trim().slice(-1);
+  const code = c.charCodeAt(0);
+  if(code >= 0xAC00 && code <= 0xD7A3) return (code - 0xAC00) % 28 !== 0;
+  if(/[0-9]/.test(c)) return '013678'.includes(c);
+  return true;
+}
+function josa(w, pair){ return w + (hasJong(w) ? pair[0] : pair[1]); }
+
+function expand(ref){
+  if(!ref) return '';
+  const bb = ref.match(/^([가-힣]+)\s*-\s*([가-힣]+)$/);
+  if(bb && ABBR[bb[1]] && ABBR[bb[2]]) return ABBR[bb[1]].n+' – '+ABBR[bb[2]].n;
+  // '창 1-4' → '창세기 1-4장' / '욜 1-암 3' → '요엘 1장 - 아모스 3장' / '창 3:1-13' → '창세기 3:1-13'
+  const two = ref.match(/^([가-힣]+)\s*(\d+)\s*-\s*([가-힣]+)\s*(\d+)$/);
+  if(two && ABBR[two[1]] && ABBR[two[3]])
+    return ABBR[two[1]].n+' '+two[2]+'장 – '+ABBR[two[3]].n+' '+two[4]+'장';
+  const m = ref.match(/^([가-힣]+)\s*(.*)$/);
+  if(!m) return ref;
+  const b = ABBR[m[1]];
+  const name = b ? b.n : m[1];
+  const rest = m[2].trim();
+  if(!rest) return name;
+  if(rest.includes(':')) return name+' '+rest;
+  return name+' '+rest+'장';
+}
+function bookOf(ref){
+  if(!ref) return null;
+  const m = ref.match(/^([가-힣]+)/);
+  return m ? ABBR[m[1]] : null;
+}
+function chapterCount(ref){
+  const m = ref && ref.match(/^[가-힣]+\s*(\d+)\s*-\s*(?:[가-힣]+\s*)?(\d+)$/);
+  if(!m) return 0;
+  const a=+m[1], b=+m[2];
+  return b>=a ? b-a+1 : 0;
+}
+
+/* ══════════ QT 설명 자동 생성 ══════════ */
+const GENRE_LINE = {
+  '율법서':'율법서는 하나님이 어떤 분이시고 그 백성이 어떻게 살아야 하는지를 처음부터 알려줍니다.',
+  '역사서':'역사서는 사람들의 실제 삶 속에서 하나님이 어떻게 일하셨는지를 보여줍니다.',
+  '시가서':'시가서는 하나님 앞에 드리는 솔직한 마음을 그대로 담고 있습니다.',
+  '선지서':'선지서는 돌이켜 하나님께 돌아오라고 부르는 말씀입니다.',
+  '복음서':'복음서는 예수님이 무엇을 말씀하시고 어떻게 사셨는지를 전합니다.',
+  '서신서':'서신서는 믿음을 어떻게 삶으로 살아낼지 구체적으로 권면합니다.',
+  '예언서':'요한계시록은 끝까지 다스리시는 주님을 바라보게 합니다.'
+};
+const ASK = [
+  ['이 본문에서 하나님은 어떤 분으로 나타나십니까?','그 하나님 앞에서 오늘 내가 내려놓아야 할 것은 무엇입니까?'],
+  ['본문 속 사람들은 하나님께 어떻게 반응합니까?','나는 지금 어느 쪽에 더 가깝습니까?'],
+  ['오늘 말씀에서 마음에 걸리거나 오래 머무는 한 구절은 어디입니까?','왜 그 구절이 마음에 남았는지 적어보세요.'],
+  ['하나님이 오늘 본문을 통해 고치라고 하시는 마음은 무엇입니까?','그것을 오늘 하루 어떻게 실천할 수 있습니까?'],
+  ['이 말씀이 사실이라면 내 하루는 무엇이 달라져야 합니까?','한 가지만 구체적으로 정해보세요.'],
+  ['본문에서 하나님이 약속하시는 것은 무엇입니까?','그 약속이 필요한 나의 자리는 어디입니까?']
+];
+function buildGuide(date, readVs, dawnVs){
+  const s = daySchedule(date);
+  const rb = bookOf(s.read), db2 = bookOf(s.dawn);
+  const q = ASK[parse(date).getDate() % ASK.length];
+  const out = [];
+
+  /* ① 오늘 읽는 말씀의 흐름 */
+  if(s.label && s.label.includes('복습')){
+    out.push({ text:'이번 주는 리딩지저스 복습 기간입니다. 새로 읽어 나가기보다, 지난 몇 주 동안 지나온 말씀 가운데 마음에 걸렸던 곳으로 다시 돌아가 보세요.' });
+  } else if(s.read){
+    const n = chapterCount(s.read);
+    let t = '오늘 리딩지저스에서는 ' + josa(expand(s.read), ['을','를']) + ' 읽습니다.';
+    if(rb) t += ' ' + josa(rb.n, ['은','는']) + ' ' + rb.d + '입니다.';
+    const hs = headingsOf(readVs, 4);
+    if(hs.length >= 2) t += ' 오늘 분량은 ' + hs.map(h => '‘'+h+'’').join(', ') + ' 순서로 이어집니다.';
+    else if(n >= 5) t += ' 한 번에 ' + n + '장을 읽게 되니, 한 절씩 뜯어보기보다 이야기 전체의 흐름을 따라가며 읽어보세요.';
+    out.push({ text:t });
+  } else if(!s.dawn){
+    out.push({ text: s.label
+      ? '이번 주는 ' + s.label + ' 기간입니다. 정해진 읽기 범위 대신, 예배에서 들은 말씀을 붙들고 묵상해보세요.'
+      : '오늘은 정해진 본문이 없습니다. 지난 말씀 가운데 마음에 남은 곳을 다시 펴보세요.' });
+  }
+
+  /* ② 새벽본문이 놓인 자리 */
+  if(s.dawn){
+    let t = '새벽본문은 ' + expand(s.dawn) + '입니다.';
+    const dh = headingsOf(dawnVs, 2);
+    if(dh.length) t += ' 오늘 아침에는 ' + dh.map(h => '‘'+h+'’').join(', ') + ' 대목 앞에 섭니다.';
+    if(db2 && db2 === rb && s.read) t += ' 넓게 읽은 본문 가운데 이 장면만 따로 떼어 더 오래 머물러 보라는 뜻입니다.';
+    else if(db2 && GENRE_LINE[db2.g]) t += ' ' + GENRE_LINE[db2.g];
+    out.push({ text:t });
+    if(dawnVs && dawnVs.length){
+      const span = dawnVs.length;
+      out.push({ text:'모두 ' + span + '절입니다. 한 번은 눈으로, 한 번은 소리 내어 읽고, 세 번째에는 내 이름을 넣어 읽어보세요. 같은 말씀이 다르게 들릴 것입니다.' });
+    }
+  }
+
+  /* ③ 관찰 질문 · ④ 생각을 넓히는 질문 */
+  out.push({ label:'오늘의 질문', text: q[0] + ' ' + q[1] });
+  out.push({ label:'생각을 넓히는 질문', text: widenQ(date, db2 || rb) });
+
+  /* ⑤ 암송구절 */
+  if(s.verse) out.push({ text:'이번 주 암송구절은 ' + expand(s.verse) + '입니다. 묵상을 마친 뒤 소리 내어 한 번 읽어보세요.' });
+  return out;
+}
+
+/* ══════════ 상태 ══════════ */
+const ADMIN_NICK = '관리자';   // 이 별명으로 가입한 계정만 관리자 메뉴를 볼 수 있다
+let me = null;                 // {uid, name, nick, isAdmin}
+let DB = null;                 // claude.use('db')
+let route = 'home';
+let qtDate = todayStr();
+let calCur = new Date();
+let sharesToday = {};          // 오늘 날짜 공유 현황
+let sharesRange = {};          // 나눔 화면에 보이는 7일 구간: 날짜 → 그 날의 entries
+let shareRangeEnd = todayStr();// 조회 중인 7일 구간의 마지막 날
+let shareRangeUnsubs = [];
+let adminOverrides = {};       // date → {exp, text, read, dawn, verse}
+let unsubs = [];
+
+const LS = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null?d:JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+const qtKey = (uid, date) => 'qt:'+uid+':'+date;
+function myQT(date){ return me ? LS.get(qtKey(me.uid, date), null) : null; }
+function allMyQT(){
+  const out = {};
+  if(!me) return out;
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.startsWith('qt:'+me.uid+':')) out[k.split(':').pop()] = LS.get(k, null);
+    }
+  }catch(e){}
+  return out;
+}
+
+/* ══════════ 토스트 ══════════ */
+let toastT;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('on'), 2200);
+}
+
+/* ══════════ 라우팅 ══════════ */
+function go(r){
+  route = r;
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's'+'-'+r));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.r === r));
+  window.scrollTo(0,0);
+  if(r==='bible') renderBible();
+  if(r==='share') renderShare();
+  if(r==='log') renderCal();
+  if(r==='my') renderMy();
+  if(r==='home') renderHome();
+}
+
+/* ══════════ 홈 ══════════ */
+function renderHome(){
+  const t = todayStr(), s = daySchedule(t), ov = adminOverrides[t] || {};
+  const h = new Date().getHours();
+  document.getElementById('greet').textContent =
+    h < 5 ? '아직 이른 새벽입니다.' : h < 11 ? '좋은 아침입니다.' :
+    h < 17 ? '평안한 오후입니다.' : h < 21 ? '수고한 하루였습니다.' : '하루를 마무리할 시간입니다.';
+  document.getElementById('homeDate').textContent = korDate(t);
+
+  const read = ov.read || s.read, dawn = ov.dawn || s.dawn;
+  document.getElementById('homeRead').textContent = read ? expand(read) : (isSunday(t) ? '주일 — 함께 예배드립니다' : '복습 기간입니다');
+  const n = chapterCount(read);
+  document.getElementById('homeReadSub').textContent =
+    s.label ? s.label : (n ? n+'장 · 오늘 읽을 분량' : (read ? '오늘 읽을 분량' : '지난 말씀을 다시 읽어보세요'));
+  document.getElementById('homeDawn').textContent = dawn ? expand(dawn) : '새벽예배 본문이 없습니다';
+  document.getElementById('homeDawnSub').textContent = dawn ? '오늘의 묵상 본문' : '';
+
+  const mine = myQT(t);
+  const cta = document.getElementById('homeCta');
+  if(mine && mine.completed){ cta.textContent = '오늘 QT를 마쳤습니다 · 다시 보기'; cta.classList.add('done'); }
+  else if(mine){ cta.textContent = '쓰던 QT 이어서 하기'; cta.classList.remove('done'); }
+  else { cta.textContent = '오늘의 QT 시작하기'; cta.classList.remove('done'); }
+
+  const verse = ov.verse || s.verse;
+  document.getElementById('memVerse').textContent = s.verseText || '이번 주 암송구절이 등록되지 않았습니다.';
+  document.getElementById('memRef').textContent = verse ? expand(verse) : '';
+  document.getElementById('weekRangeLabel').textContent = s.week ? korDate(s.week)+'부터' : '';
+
+  const nz = adminOverrides['notice'] || {};
+  const now = Date.now();
+  const inWindow = (!nz.from || now >= nz.from) && (!nz.to || now <= nz.to);
+  const notice = (nz.text && inWindow) ? nz.text : '';
+  document.getElementById('homeNotice').textContent = notice || (DB
+    ? '공동체 나눔은 교회 계정으로 로그인한 교인에게만 보입니다.'
+    : '지금은 이 기기에만 QT가 저장됩니다. 나눔 기능은 연결이 되면 켜집니다.');
+
+  const mm = t.slice(0,7), all = allMyQT();
+  document.getElementById('statMine').textContent =
+    Object.keys(all).filter(d => d.startsWith(mm) && all[d] && all[d].completed).length + '일';
+  document.getElementById('statDone').textContent = countDone(sharesToday);
+}
+function countDone(map){
+  return Object.values(map||{}).filter(e => e && e.completed && e.share !== 'PRIVATE').length;
+}
+
+/* ══════════ QT 집중 화면 ══════════ */
+function openQT(date){
+  if(!me){ openSheet('sheet-auth'); toast('먼저 시작하기를 눌러주세요'); return; }
+  qtDate = date;
+  document.getElementById('qt').classList.add('on');
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.r === 'qtjump'));
+  document.body.style.overflow = 'hidden';
+  renderQT();
+  document.getElementById('qt').scrollTop = 0;
+}
+function closeQT(){
+  document.getElementById('qt').classList.remove('on');
+  document.body.style.overflow = '';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.r === route));
+  refreshScreen();               // 화면 전환 없이 지금 보던 탭만 다시 그린다 (스크롤 위치 유지)
+}
+function refreshScreen(){
+  if(route==='bible') renderBible();
+  else if(route==='share') renderShare();
+  else if(route==='log') renderCal();
+  else if(route==='my') renderMy();
+  else renderHome();
+}
+/* 탭을 눌러 다른 화면으로 이동 — QT가 열려 있으면 먼저 닫는다 */
+function tabGo(r){
+  const qtEl = document.getElementById('qt');
+  if(qtEl.classList.contains('on')){
+    qtEl.classList.remove('on');
+    document.body.style.overflow = '';
+  }
+  go(r);
+}
+function stepQT(n){
+  const nd = addDays(qtDate, n);
+  if(nd > todayStr() && n > 0) return;
+  qtDate = nd; renderQT(); document.getElementById('qt').scrollTop = 0;
+}
+let qtToken = 0;
+async function renderQT(){
+  const token = ++qtToken;
+  const s = daySchedule(qtDate), ov = adminOverrides[qtDate] || {};
+  const read = ov.read || s.read, dawn = ov.dawn || s.dawn;
+
+  document.getElementById('qtTitle').textContent = qtDate === todayStr() ? '오늘의 QT' : '지난 QT';
+  document.getElementById('qtDate').textContent = parse(qtDate).getFullYear()+'년 '+korDate(qtDate);
+  document.getElementById('qtNext').disabled = qtDate >= todayStr();
+
+  document.getElementById('qtRead').textContent = read ? expand(read) : (isSunday(qtDate) ? '주일 예배' : '복습 기간');
+  const n = chapterCount(read);
+  document.getElementById('qtReadSub').textContent = n ? n+'장' : (s.label || '');
+  document.getElementById('qtDawn').textContent = dawn ? expand(dawn) : '—';
+
+  const foldR = document.getElementById('foldRead'), foldD = document.getElementById('foldDawn');
+  foldR.style.display = read ? 'block' : 'none';
+  foldD.style.display = dawn ? 'block' : 'none';
+  foldR.open = LS.get('foldRead:v2', false);
+  foldD.open = LS.get('foldDawn:v2', false);
+  document.getElementById('sumRead').textContent = read ? expand(read) + ' 전문' : '본문 읽기';
+  document.getElementById('sumDawn').textContent = dawn ? expand(dawn) + ' 전문' : '본문 읽기';
+
+  /* 저장된 내용 먼저 채운다 — 본문 로딩을 기다리지 않는다 */
+  const saved = myQT(qtDate) || {};
+  document.getElementById('reflection').value = saved.reflection || '';
+  document.getElementById('prayer').value = saved.prayer || '';
+  document.getElementById('isDone').checked = (saved.completed !== undefined) ? saved.completed : true;
+  document.getElementById('sharePrayer').checked = !!saved.sharePrayer;
+  const sv = saved.share || 'PRIVATE';
+  document.querySelectorAll('input[name=share]').forEach(r => { r.checked = (r.value === sv); });
+  syncShareUI();
+  document.getElementById('savedNote').textContent =
+    saved.updatedAt ? new Date(saved.updatedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 저장됨' : '';
+
+  const readEl = document.getElementById('qtReadText'), dawnEl = document.getElementById('qtScripture');
+  attachLongPressCopy(readEl); attachLongPressCopy(dawnEl);
+  readEl.innerHTML = '<div class="note">본문을 불러오는 중입니다…</div>';
+  dawnEl.innerHTML = '<div class="note">본문을 불러오는 중입니다…</div>';
+  paintGuide(qtDate, null, null);
+
+  const [readVs, dawnVs] = await Promise.all([getPassage(read), getPassage(dawn)]);
+  if(token !== qtToken) return;
+
+  const miss = BIB.ready
+    ? '이 범위의 본문을 찾지 못했습니다. 관리자 화면에서 본문 파일을 다시 확인해주세요.'
+    : '성경 본문이 아직 연결되지 않았습니다. 관리자가 교회 성경 파일을 한 번 올리면 이 자리에 본문이 그대로 보입니다.';
+  paintVerses(readEl, readVs, read, miss);
+  paintVerses(dawnEl, ov.text ? null : dawnVs, dawn, miss);
+  if(ov.text){ dawnEl.className = 'vs'; dawnEl.innerHTML = '<p>' + esc(ov.text).replace(/\n/g,'</p><p>') + '</p>'; dawnEl.dataset.copyText = ov.text; }
+  paintGuide(qtDate, readVs, dawnVs);
+}
+function paintGuide(date, readVs, dawnVs){
+  const ov = adminOverrides[date] || {};
+  const g = document.getElementById('qtGuide');
+  g.innerHTML = '';
+  if(ov.exp){
+    ov.exp.split(/\n+/).forEach(p => { if(!p.trim()) return;
+      const el = document.createElement('p'); el.textContent = p; g.appendChild(el); });
+    return;
+  }
+  buildGuide(date, readVs, dawnVs).forEach(item => {
+    const el = document.createElement('p');
+    if(item.label){ el.className = 'ask'; el.innerHTML = '<small>'+esc(item.label)+'</small>'+esc(item.text); }
+    else el.textContent = item.text;
+    g.appendChild(el);
+  });
+}
+document.addEventListener('toggle', e => {
+  if(e.target.id === 'foldRead' || e.target.id === 'foldDawn') LS.set(e.target.id+':v2', e.target.open);
+}, true);
+
+function syncShareUI(){
+  let v = 'PRIVATE';
+  document.querySelectorAll('input[name=share]').forEach(r => {
+    r.closest('.share-opt').classList.toggle('sel', r.checked);
+    if(r.checked) v = r.value;
+  });
+  document.getElementById('prayerShareWrap').style.display = v === 'CONTENT' ? 'flex' : 'none';
+}
+document.addEventListener('change', e => { if(e.target.name === 'share') syncShareUI(); });
+
+async function saveQT(){
+  if(!me) { openSheet('sheet-auth'); return; }
+  const share = (document.querySelector('input[name=share]:checked')||{}).value || 'PRIVATE';
+  const rec = {
+    reflection: document.getElementById('reflection').value.trim(),
+    prayer: document.getElementById('prayer').value.trim(),
+    completed: document.getElementById('isDone').checked,
+    sharePrayer: document.getElementById('sharePrayer').checked,
+    share, updatedAt: Date.now()
+  };
+  if(!rec.reflection && !rec.prayer && !rec.completed){ toast('한 줄이라도 적거나 완료를 표시해주세요'); return; }
+  LS.set(qtKey(me.uid, qtDate), rec);
+  document.getElementById('savedNote').textContent = '방금 저장됨';
+  const t = rec.completed ? '오늘 QT를 마쳤습니다' : '여기까지 저장했습니다';
+  closeQT(); go('home'); toast(t);
+  await pushShare(qtDate, rec);
+  renderHome();
+  setTimeout(() => checkBadges(), 1500);
+}
+
+/* ══════════ 공유 (db) ══════════ */
+function entryFrom(rec){
+  const e = { name: me.nick, realName: me.name, completed: !!rec.completed, share: rec.share, at: rec.updatedAt };
+  if(rec.share === 'CONTENT'){
+    e.reflection = rec.reflection;
+    if(rec.sharePrayer && rec.prayer) e.prayer = rec.prayer;
+  }
+  return e;
+}
+async function writeDoc(path, body){
+  if(!DB) return false;
+  const ref = DB.doc(path);
+  try{ await ref.update(body); return true; }
+  catch(err){
+    try{
+      const snap = await ref.get();
+      if(!snap.exists){ await ref.set(body); return true; }
+      await ref.update(body); return true;
+    }catch(e2){ return false; }
+  }
+}
+async function pushShare(date, rec){
+  if(!DB || !me) return;
+  const body = { entries: {} };
+  body.entries[me.uid] = entryFrom(rec);
+  const ok = await writeDoc('shares/'+date, body);
+  if(!ok && rec.share !== 'PRIVATE') toast('나눔 저장에 실패했습니다. 잠시 뒤 다시 저장해주세요');
+}
+/* 나눔 공감 반응 — QT 나눔에 어울리는 다섯 가지로 구성 */
+const REACTIONS = [
+  { id:'pray',  icon:'🙏', label:'기도했어요' },
+  { id:'grace', icon:'❤️', label:'은혜가 돼요' },
+  { id:'cheer', icon:'💪', label:'응원해요' },
+  { id:'joy',   icon:'😊', label:'함께 기뻐요' },
+  { id:'sad',   icon:'🥲', label:'함께 마음써요' }
+];
+function reactionMap(entry, rid){
+  const m = (entry.reactions && entry.reactions[rid]) || {};
+  if(rid === 'pray' && entry.prayers) return Object.assign({}, entry.prayers, m); // 예전 기도했어요 기록과 합침
+  return m;
+}
+async function toggleReaction(date, uid, rid){
+  if(!DB || !me) { toast('로그인 후 사용할 수 있습니다'); return; }
+  const entry = (sharesRange[date] && sharesRange[date][uid]) || {};
+  const cur = reactionMap(entry, rid);
+  const body = { entries: {} };
+  body.entries[uid] = { reactions: {} };
+  body.entries[uid].reactions[rid] = {};
+  body.entries[uid].reactions[rid][me.uid] = cur[me.uid] ? false : true;
+  await writeDoc('shares/'+date, body);
+}
+async function addComment(date, uid, input){
+  const text = input.value.trim();
+  if(!text) return;
+  if(!DB || !me){ toast('로그인 후 사용할 수 있습니다'); return; }
+  const cid = 'c'+Date.now().toString(36);
+  const body = { entries: {} };
+  body.entries[uid] = { comments: {} };
+  body.entries[uid].comments[cid] = { by: me.uid, name: me.nick, text, at: Date.now() };
+  input.value = '';
+  await writeDoc('shares/'+date, body);
+  LS.set('badge:firstComment', true);
+  checkBadges();
+}
+
+function watchShares(date){
+  if(!DB) return;
+  const un = DB.doc('shares/'+date).onSnapshot(snap => {
+    const data = snap.exists ? (snap.data().entries || {}) : {};
+    sharesToday = data; if(route==='home') renderHome();
+    notePrayersForMe(date, data);
+  }, () => {});
+  unsubs.push(un);
+}
+
+/* ══════════ 나눔 화면 (최근 7일, 최신순) ══════════ */
+let shareFilterUid = null;   // 특정 교인의 글만 볼 때 그 uid
+function shareRangeDates(){
+  const out = []; let d = shareRangeEnd;
+  for(let i=0;i<7;i++){ out.push(d); d = addDays(d,-1); }
+  return out;                     // [최신날짜 ... 6일전] 순
+}
+function subscribeShareRange(){
+  shareRangeUnsubs.forEach(u => u()); shareRangeUnsubs = [];
+  if(!DB){ paintFeed(); return; }
+  shareRangeDates().forEach(ds => {
+    const un = DB.doc('shares/'+ds).onSnapshot(snap => {
+      sharesRange[ds] = snap.exists ? (snap.data().entries || {}) : {};
+      notePrayersForMe(ds, sharesRange[ds]);
+      if(route==='share') paintFeed();
+    }, () => {});
+    shareRangeUnsubs.push(un);
+  });
+}
+function shareRangeMove(weeks){
+  const nd = addDays(shareRangeEnd, weeks*7);
+  shareRangeEnd = nd > todayStr() ? todayStr() : nd;
+  shareFilterUid = null;
+  subscribeShareRange();
+  renderShare();
+}
+function renderShare(){
+  const dates = shareRangeDates();
+  document.getElementById('shareRangeLabel').textContent =
+    korDateShort(dates[dates.length-1])+' ~ '+korDateShort(dates[0]);
+  document.getElementById('shareNextBtn').disabled = shareRangeEnd >= todayStr();
+  paintCheers();
+  paintFeed();
+}
+function setShareFilter(uid){
+  shareFilterUid = (shareFilterUid === uid) ? null : uid;
+  paintFeed();
+}
+function paintFeed(){
+  const dates = shareRangeDates();
+  const merged = [], doneMap = new Map();
+  dates.forEach(ds => {
+    const entries = sharesRange[ds] || {};
+    Object.entries(entries).forEach(([uid,e]) => {
+      if(!e || !e.share) return;
+      if(e.completed) doneMap.set(uid, e.name);
+      if(e.share !== 'PRIVATE') merged.push({ uid, date:ds, e });
+    });
+  });
+  document.getElementById('shareCount').textContent = doneMap.size ? doneMap.size+'명 완료' : '';
+  const chips = document.getElementById('doneChips');
+  chips.innerHTML = '';
+  doneMap.forEach((name, uid) => {
+    const c = document.createElement('button'); c.type = 'button';
+    c.className = 'chip'+(shareFilterUid===uid ? ' on' : '');
+    c.innerHTML = esc(name)+'<b>✓</b>';
+    c.onclick = () => setShareFilter(uid);
+    chips.appendChild(c);
+  });
+
+  const filterNote = document.getElementById('shareFilterNote');
+  if(shareFilterUid && doneMap.has(shareFilterUid)){
+    filterNote.style.display = 'flex';
+    filterNote.querySelector('span').textContent = esc(doneMap.get(shareFilterUid))+'님의 글만 보는 중';
+  } else {
+    shareFilterUid = null;
+    filterNote.style.display = 'none';
+  }
+
+  const feed = document.getElementById('shareFeed');
+  let posts = merged.filter(m => m.e.share === 'CONTENT' && (m.e.reflection || m.e.prayer))
+                     .sort((a,b) => (b.e.at||0) - (a.e.at||0));
+  if(shareFilterUid) posts = posts.filter(m => m.uid === shareFilterUid);
+  feed.innerHTML = '';
+  if(!posts.length){
+    const msg = shareFilterUid
+      ? '이 기간에는 이 교인이 나눈 묵상이 없습니다.'
+      : (DB ? '이번 주에는 아직 나눈 묵상이 없습니다.<br>오늘의 QT에서 “나의 묵상 내용을 나누기”를 선택하면<br>이곳에 가장 먼저 올라갑니다.'
+            : '나눔 기능을 사용할 수 없는 화면입니다.');
+    feed.innerHTML = '<div class="empty">'+msg+'</div>';
+    return;
+  }
+  posts.forEach(m => feed.appendChild(postEl(m.uid, m.e, daySchedule(m.date), m.date)));
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function postEl(uid, e, sch, date){
+  const d = document.createElement('div'); d.className = 'post';
+  const cmts = Object.entries(e.comments || {}).sort((a,b) => (a[1].at||0) - (b[1].at||0));
+  const reactHtml = REACTIONS.map(r => {
+    const m = reactionMap(e, r.id), cnt = Object.values(m).filter(Boolean).length, mine = me && m[me.uid];
+    return '<button class="act'+(mine?' on':'')+'" data-r="'+r.id+'" title="'+esc(r.label)+'">'+r.icon+(cnt?' '+cnt:'')+'</button>';
+  }).join('');
+  d.innerHTML =
+    '<div class="post-h"><div class="ava">'+esc((e.name||'?').slice(0,1))+'</div>'+
+    '<div><b>'+esc(e.name)+'</b><small>'+(e.at ? new Date(e.at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '')+'</small></div></div>'+
+    '<div class="post-ref">'+esc(expand((adminOverrides[date]||{}).dawn || sch.dawn) || korDate(date))+'</div>'+
+    '<div class="post-body">'+esc(e.reflection||'')+'</div>'+
+    (e.prayer ? '<div class="post-ref" style="margin-top:14px">기도제목</div><div class="post-body">'+esc(e.prayer)+'</div>' : '')+
+    '<div class="post-acts">'+reactHtml+'<button class="act cmtbtn">💬 댓글'+(cmts.length?' '+cmts.length:'')+'</button></div>'+
+    '<div class="cmt" style="display:'+(cmts.length?'block':'none')+'">'+
+      cmts.map(([,c]) => '<div class="cmt-item"><b>'+esc(c.name)+'</b>'+esc(c.text)+'</div>').join('')+
+      '<div class="cmt-form"><input placeholder="따뜻한 한마디를 남겨보세요"><button>등록</button></div>'+
+    '</div>';
+  d.querySelectorAll('.post-acts .act[data-r]').forEach(btn => {
+    btn.onclick = () => toggleReaction(date, uid, btn.dataset.r);
+  });
+  const cmtBox = d.querySelector('.cmt');
+  d.querySelector('.cmtbtn').onclick = () => { cmtBox.style.display = cmtBox.style.display === 'none' ? 'block' : 'none'; };
+  const inp = d.querySelector('.cmt-form input'), btn = d.querySelector('.cmt-form button');
+  btn.onclick = () => addComment(date, uid, inp);
+  inp.onkeydown = ev => { if(ev.key === 'Enter') btn.click(); };
+  return d;
+}
+
+/* ══════════ 성경 ══════════ */
+let bibleTestament = '구약', bibleBook = null;
+function renderBible(){
+  const nav = document.getElementById('bibleNav'), view = document.getElementById('bibleView');
+  nav.innerHTML = '<div class="seg"><button class="'+(bibleTestament==='구약'?'on':'')+'" data-t="구약">구약 39권</button>'+
+                  '<button class="'+(bibleTestament==='신약'?'on':'')+'" data-t="신약">신약 27권</button></div>';
+  nav.querySelectorAll('button').forEach(b => b.onclick = () => { bibleTestament = b.dataset.t; bibleBook = null; renderBible(); });
+
+  const list = BOOKS.filter((b,i) => bibleTestament==='구약' ? i < 39 : i >= 39);
+  if(!bibleBook){
+    view.innerHTML = '<div class="booklist">'+list.map(b => '<button class="bookbtn" data-a="'+b.a+'">'+b.n+'</button>').join('')+'</div>';
+    view.querySelectorAll('.bookbtn').forEach(b => b.onclick = () => { bibleBook = ABBR[b.dataset.a]; renderBible(); });
+    return;
+  }
+  const b = bibleBook;
+  let h = '<button class="act" style="margin-bottom:14px" id="bk">← '+bibleTestament+' 목록</button>'+
+    '<h3 class="sec-h" style="font-size:22px">'+b.n+' <em>'+b.c+'장 · '+b.g+'</em></h3>'+
+    '<p style="color:var(--sub);font-size:14.5px;line-height:1.75;margin:0 0 20px">'+b.d+'</p>'+
+    '<div class="chapgrid">';
+  for(let i=1;i<=b.c;i++) h += '<button class="chapbtn" data-c="'+i+'">'+i+'</button>';
+  h += '</div><div id="chapView"></div>';
+  view.innerHTML = h;
+  view.querySelector('#bk').onclick = () => { bibleBook = null; renderBible(); };
+  view.querySelectorAll('.chapbtn').forEach(c => c.onclick = async () => {
+    const box = document.getElementById('chapView');
+    box.innerHTML = '<div class="fold" style="margin-top:20px"><div class="fold-in"><div class="note">불러오는 중입니다…</div></div></div>';
+    const vs = await getPassage(b.a + ' ' + c.dataset.c);
+    box.innerHTML = '<div class="fold" style="margin-top:20px"><div class="fold-in"><div class="vs" id="chapText"></div></div></div>';
+    const chapEl = document.getElementById('chapText');
+    paintVerses(chapEl, vs, b.a+' '+c.dataset.c,
+      BIB.ready ? '이 장의 본문을 찾지 못했습니다.'
+                : '성경 본문이 아직 연결되지 않았습니다. 관리자 화면에서 교회 성경 파일을 한 번 올리면 이곳에 본문이 표시됩니다.');
+    attachLongPressCopy(chapEl);
+    box.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+}
+
+/* ══════════ 기록 캘린더 ══════════ */
+function calMove(n){ calCur.setMonth(calCur.getMonth()+n); renderCal(); }
+function renderCal(){
+  const y = calCur.getFullYear(), m = calCur.getMonth();
+  document.getElementById('calLabel').textContent = y+'년 '+(m+1)+'월';
+  const first = new Date(y,m,1), days = new Date(y,m+1,0).getDate();
+  const all = allMyQT();
+  let h = '';
+  DOW.forEach((d,i) => h += '<div class="dow'+(i===0?' sun':'')+'">'+d+'</div>');
+  for(let i=0;i<first.getDay();i++) h += '<div class="cell blank"></div>';
+  for(let d=1;d<=days;d++){
+    const ds = y+'-'+pad(m+1)+'-'+pad(d);
+    const r = all[ds];
+    const cls = 'cell'+(r ? ' has' : '')+(ds===todayStr() ? ' today' : '')+
+      (selectMode ? ' pickable' : '')+(selectMode && selectedDates.has(ds) ? ' sel' : '');
+    h += '<button class="'+cls+'" data-d="'+ds+'">'+d+(r && r.completed && !selectMode ? '<i class="dot"></i>' : '')+'</button>';
+  }
+  const cal = document.getElementById('cal');
+  cal.innerHTML = h;
+  cal.querySelectorAll('.cell[data-d]').forEach(c => {
+    c.onclick = () => selectMode ? toggleDate(c.dataset.d) : showLog(c.dataset.d);
+  });
+  if(!selectMode){
+    document.getElementById('logDetail').innerHTML =
+      '<div class="empty">날짜를 누르면 그날의 QT를 볼 수 있습니다.<br>기록이 있는 날은 색으로 표시됩니다.</div>';
+  }
+}
+
+/* ---- 묵상 내용만 골라서 카카오톡 등으로 공유 ---- */
+let selectMode = false, selectedDates = new Set();
+function toggleSelectMode(){
+  selectMode = !selectMode;
+  selectedDates.clear();
+  document.getElementById('selToggle').textContent = selectMode ? '선택 취소' : '여러 날짜 골라 카카오톡으로 공유';
+  document.getElementById('selBar').classList.toggle('on', selectMode);
+  document.getElementById('selCount').textContent = '0일 선택됨';
+  renderCal();
+}
+function toggleDate(ds){
+  if(selectedDates.has(ds)) selectedDates.delete(ds); else selectedDates.add(ds);
+  document.getElementById('selCount').textContent = selectedDates.size+'일 선택됨';
+  renderCal();
+}
+function composeShareText(dates){
+  const sorted = Array.from(dates).sort();
+  const chunks = [];
+  sorted.forEach(ds => {
+    const r = myQT(ds);
+    if(!r || !r.reflection || !r.reflection.trim()) return;
+    const s = daySchedule(ds), ov = adminOverrides[ds] || {};
+    const ref = expand(ov.dawn || s.dawn) || expand(ov.read || s.read) || '';
+    chunks.push(korDate(ds) + (ref ? ' · '+ref : '') + '\n' + r.reflection.trim());
+  });
+  if(!chunks.length) return '';
+  return '🕊 나의 QT 묵상\n\n' + chunks.join('\n\n────────\n\n');
+}
+async function shareSelected(){
+  if(!selectedDates.size){ toast('날짜를 먼저 선택해주세요'); return; }
+  const text = composeShareText(selectedDates);
+  if(!text){ toast('선택한 날짜에 작성된 묵상이 없습니다'); return; }
+  if(navigator.share){
+    try{ await navigator.share({ title:'나의 QT 묵상', text }); toggleSelectMode(); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }   // 공유 취소는 그대로 둔다
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('복사했습니다. 카카오톡 대화방에 붙여넣어주세요');
+    toggleSelectMode();
+  }catch(e){
+    toast('공유를 지원하지 않는 브라우저입니다');
+  }
+}
+
+/* ══════════ 초대 링크 ══════════ */
+const SITE_URL = 'https://claude.ai/artifact/TjTRQMDxcAi1gMxPhbHxK9';
+async function inviteFriends(){
+  const text = '우리교회 QT 사이트에 초대합니다 🕊\n매일 말씀 읽고 묵상을 나눠요.\n\n'+SITE_URL;
+  if(navigator.share){
+    try{ await navigator.share({ title:'우리교회 QT', text, url:SITE_URL }); return; }
+    catch(e){ if(e && e.name === 'AbortError') return; }
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('초대 링크를 복사했습니다 · 카카오톡에 붙여넣어주세요');
+  }catch(e){
+    toast('이 브라우저에서는 복사를 지원하지 않습니다');
+  }
+}
+function showLog(ds){
+  const r = myQT(ds), s = daySchedule(ds), box = document.getElementById('logDetail');
+  if(!r){
+    box.innerHTML = '<div class="post"><div class="post-ref">'+korDate(ds)+'</div>'+
+      '<div style="color:var(--faint);font-size:14.5px;margin:6px 0 14px">이 날은 기록이 없습니다.</div>'+
+      (ds <= todayStr() ? '<button class="act" onclick="openQT(\''+ds+'\')">지금 작성하기</button>' : '')+'</div>';
+    return;
+  }
+  const lab = {PRIVATE:'비공개', COMPLETION_ONLY:'완료만 공유', CONTENT:'내용 공유'}[r.share] || '비공개';
+  box.innerHTML = '<div class="post"><div class="post-ref">'+korDate(ds)+' · '+esc(expand(s.dawn) || '—')+'</div>'+
+    '<div class="post-body">'+esc(r.reflection || '(묵상 없음)')+'</div>'+
+    (r.prayer ? '<div class="post-ref" style="margin-top:14px">기도제목</div><div class="post-body">'+esc(r.prayer)+'</div>' : '')+
+    '<div class="post-acts"><span class="act">'+(r.completed?'✓ 완료':'작성 중')+'</span><span class="act">'+lab+'</span>'+
+    '<button class="act" onclick="openQT(\''+ds+'\')">수정</button></div></div>';
+}
+
+/* ══════════ 마이페이지 ══════════ */
+function renderMy(){
+  document.getElementById('myAva').textContent = me ? me.nick.slice(0,1) : '?';
+  document.getElementById('myName').textContent = me ? me.name : '손님';
+  document.getElementById('mySub').textContent = me ? '별명 · '+me.nick : '로그인하면 QT를 기록할 수 있습니다';
+  document.getElementById('authMenuLabel').textContent = me ? '계정 정보' : '로그인 / 회원가입';
+  document.getElementById('adminMenuBtn').style.display = (me && me.isAdmin) ? 'flex' : 'none';
+
+  const all = allMyQT(), t = new Date();
+  const sun = new Date(t); sun.setDate(t.getDate() - t.getDay());
+  let h = '';
+  for(let i=0;i<7;i++){
+    const d = new Date(sun); d.setDate(sun.getDate()+i);
+    const r = all[ymd(d)];
+    h += '<div class="wd"><span>'+DOW[i]+'</span><i class="'+(r&&r.completed?'on':'')+'">'+(r&&r.completed?'✓':'·')+'</i></div>';
+  }
+  document.getElementById('weekDots').innerHTML = h;
+
+  const mm = todayStr().slice(0,7);
+  const done = Object.keys(all).filter(d => d.startsWith(mm) && all[d] && all[d].completed).length;
+  const elapsed = t.getDate();
+  document.getElementById('myMonth').textContent = done+' / '+elapsed;
+  document.getElementById('myRate').textContent = Math.round(done/elapsed*100)+'%';
+  let streak = 0, cur = todayStr(), guard = 0;
+  while(guard++ < 400){
+    if(isSunday(cur)){ cur = addDays(cur,-1); continue; }   // 주일은 건너뛰고 계속 센다
+    if(all[cur] && all[cur].completed){ streak++; cur = addDays(cur,-1); }
+    else break;
+  }
+  document.getElementById('myStreak').textContent = streak+'일';
+
+  paintBadges();
+}
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : cur === 'light' ? '' : 'dark';
+  if(next) document.documentElement.setAttribute('data-theme', next);
+  else document.documentElement.removeAttribute('data-theme');
+  LS.set('theme', next);
+  document.getElementById('themeLabel').textContent = next === 'dark' ? '어둡게' : next === 'light' ? '밝게' : '시스템';
+}
+
+/* ══════════ 시트 ══════════ */
+function openSheet(id){
+  document.getElementById(id).classList.add('on');
+  if(id === 'sheet-admin'){
+    const el = document.getElementById('adDate');
+    if(!el.value) el.value = todayStr();
+    loadAdmin();
+    const nz = adminOverrides['notice'] || {};
+    document.getElementById('adNotice').value = nz.text || '';
+    document.getElementById('adNoticeFrom').value = toLocalInput(nz.from);
+    document.getElementById('adNoticeTo').value = toLocalInput(nz.to);
+  }
+}
+function closeSheet(){ document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
+
+/* ══════════ 인증 (간이) ══════════ */
+let authTab = 'signup';
+function authMode(m){
+  authTab = m;
+  document.getElementById('tabSignup').classList.toggle('on', m==='signup');
+  document.getElementById('tabLogin').classList.toggle('on', m==='login');
+  document.getElementById('auName').style.display = m==='signup' ? 'block' : 'none';
+  document.getElementById('auGo').textContent = m==='signup' ? '가입하고 시작하기' : '로그인';
+  document.getElementById('auErr').textContent = '';
+}
+async function sha(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function doAuth(){
+  const err = document.getElementById('auErr');
+  const name = document.getElementById('auName').value.trim();
+  const nick = document.getElementById('auNick').value.trim();
+  const pin  = document.getElementById('auPin').value.trim();
+  err.textContent = '';
+  if(authTab==='signup' && !name){ err.textContent = '이름을 입력해주세요.'; return; }
+  if(!nick){ err.textContent = '별명을 입력해주세요.'; return; }
+  if(!/^\d{4}$/.test(pin)){ err.textContent = '비밀번호는 숫자 4자리입니다.'; return; }
+
+  const uid = 'u' + (await sha('nick:'+nick)).slice(0,20);
+  const hash = await sha(nick+'|'+pin);
+
+  const isAdmin = nick === ADMIN_NICK;
+
+  if(!DB){
+    me = { uid, name: name || nick, nick, isAdmin };
+    LS.set('me', me); afterAuth(); return;
+  }
+  const ref = DB.doc('members/'+uid);
+  let snap;
+  try{ snap = await ref.get(); }catch(e){ err.textContent = '연결에 문제가 있습니다. 잠시 뒤 다시 시도해주세요.'; return; }
+
+  if(authTab === 'signup'){
+    if(snap.exists){ err.textContent = '이미 사용 중인 별명입니다. 로그인을 눌러주세요.'; return; }
+    try{ await ref.set({ nick, name, hash, at: Date.now() }); }
+    catch(e){ err.textContent = '가입에 실패했습니다. 잠시 뒤 다시 시도해주세요.'; return; }
+    me = { uid, name, nick, isAdmin };
+  }else{
+    if(!snap.exists){ err.textContent = '등록되지 않은 별명입니다. 회원가입을 눌러주세요.'; return; }
+    const d = snap.data();
+    if(d.hash !== hash){ err.textContent = '비밀번호가 맞지 않습니다.'; return; }
+    me = { uid, name: d.name || nick, nick, isAdmin };
+  }
+  LS.set('me', me);
+  afterAuth();
+}
+function afterAuth(){
+  closeSheet();
+  document.getElementById('auPin').value = '';
+  toast(me.name+'님, 환영합니다');
+  renderMy(); renderHome();
+}
+function doLogout(){
+  if(!me){ toast('로그인되어 있지 않습니다'); return; }
+  if(!confirm('로그아웃하시겠어요? 이 기기에 저장된 묵상 기록은 다시 로그인하면 볼 수 있습니다.')) return;
+  me = null; LS.del('me');
+  renderMy(); renderHome(); toast('로그아웃되었습니다');
+}
+
+/* ══════════ 관리자 ══════════ */
+function loadAdmin(){
+  const d = document.getElementById('adDate').value || todayStr();
+  const s = daySchedule(d), ov = adminOverrides[d] || {};
+  document.getElementById('adRead').value = ov.read || s.read || '';
+  document.getElementById('adDawn').value = ov.dawn || s.dawn || '';
+  document.getElementById('adText').value = ov.text || '';
+  document.getElementById('adExp').value  = ov.exp  || '';
+  document.getElementById('adVerse').value = ov.verse || s.verse || '';
+  document.getElementById('adErr').textContent = '';
+}
+async function saveAdmin(){
+  const d = document.getElementById('adDate').value;
+  const err = document.getElementById('adErr');
+  if(!d){ err.textContent = '날짜를 선택해주세요.'; return; }
+  const body = {
+    read: document.getElementById('adRead').value.trim(),
+    dawn: document.getElementById('adDawn').value.trim(),
+    text: document.getElementById('adText').value.trim(),
+    exp:  document.getElementById('adExp').value.trim(),
+    verse: document.getElementById('adVerse').value.trim(),
+    at: Date.now()
+  };
+  adminOverrides[d] = body;
+  if(DB){
+    const ok = await writeDoc('content/'+d, body);
+    if(!ok){ err.textContent = '저장에 실패했습니다. 편집 권한이 있는지 확인해주세요.'; return; }
+  }
+  closeSheet(); toast(korDate(d)+' 콘텐츠를 저장했습니다');
+  if(qtDate === d) renderQT();
+  renderHome();
+}
+function toLocalInput(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+async function saveNotice(){
+  const err = document.getElementById('noticeErr');
+  const text = document.getElementById('adNotice').value.trim();
+  const fromV = document.getElementById('adNoticeFrom').value;
+  const toV = document.getElementById('adNoticeTo').value;
+  if(fromV && toV && fromV > toV){ err.textContent = '종료 시각이 시작 시각보다 빠릅니다.'; return; }
+  const body = {
+    text,
+    from: fromV ? new Date(fromV).getTime() : 0,
+    to:   toV ? new Date(toV).getTime() : 0,
+    at: Date.now()
+  };
+  adminOverrides['notice'] = body;
+  if(DB){
+    const ok = await writeDoc('content/notice', body);
+    if(!ok){ err.textContent = '저장에 실패했습니다. 편집 권한이 있는지 확인해주세요.'; return; }
+  }
+  err.textContent = '';
+  toast(text ? (fromV || toV ? '기간 한정 알림을 저장했습니다' : '상시 알림을 저장했습니다') : '알림을 비웠습니다');
+  renderHome();
+}
+
+/* ══════════════════════════════════════════════
+   성경 본문 저장소 — 교회가 올린 파일을 읽고 보관한다
+   ══════════════════════════════════════════════ */
+const CHUNK = 55000;              // 한 문서에 담는 글자 수
+const BIB = { ver:null, at:0, mem:{}, ready:false };
+
+function lookupBook(s){
+  s = (s||'').trim();
+  return ABBR[s] || FULL[s] || null;
+}
+
+/* ---- IndexedDB (기기 캐시) ---- */
+function idbOpen(){
+  return new Promise(res => {
+    try{
+      const r = indexedDB.open('qt-bible', 1);
+      r.onupgradeneeded = () => { if(!r.result.objectStoreNames.contains('b')) r.result.createObjectStore('b'); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => res(null);
+    }catch(e){ res(null); }
+  });
+}
+async function idbGet(k){
+  const db = await idbOpen(); if(!db) return null;
+  return new Promise(res => {
+    try{ const q = db.transaction('b').objectStore('b').get(k);
+      q.onsuccess = () => res(q.result || null); q.onerror = () => res(null);
+    }catch(e){ res(null); }
+  });
+}
+async function idbSet(k, v){
+  const db = await idbOpen(); if(!db) return;
+  try{ db.transaction('b','readwrite').objectStore('b').put(v, k); }catch(e){}
+}
+
+/* ---- 파싱: "창1:1 <소제목> 본문" 형식 ---- */
+function parseBibleText(text, onProgress){
+  const lines = text.split(/\r?\n/);
+  const books = {};
+  let lastB = null, lastC = 0, lastV = 0, pend = '';
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i].trim();
+    if(!line) continue;
+    let m = line.match(/^([가-힣]{1,2})(\d+):(\d+)(?:-\d+)?\s+(.*)$/);
+    if(m){
+      const b = m[1], c = +m[2], v = +m[3];
+      if(!ABBR[b]) continue;
+      let rest = m[4], carry = null;
+      /* 책이 바뀌는 자리에서 두 절이 한 줄에 붙어 있는 경우를 떼어낸다 */
+      const re = /1:1\s/g; let mm;
+      while((mm = re.exec(rest))){
+        if(mm.index < 1) continue;
+        const two = rest.slice(mm.index-2, mm.index), one = rest.slice(mm.index-1, mm.index);
+        const hit = (ABBR[two] && two !== b) ? two : (ABBR[one] && one !== b) ? one : null;
+        if(hit){
+          carry = { b:hit, rest: rest.slice(mm.index + 4) };
+          rest = rest.slice(0, mm.index - hit.length);
+          break;
+        }
+      }
+      const titles = (rest.match(/<[^>]*>/g) || []).map(t => t.slice(1,-1).trim());
+      const body = rest.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+      const t = (pend ? [pend] : []).concat(titles).filter(Boolean).join(' / ');
+      pend = '';
+      (books[b] = books[b] || {})[c+':'+v] = { t, x: body };
+      lastB = b; lastC = c; lastV = v;
+      if(carry){
+        const ct = (carry.rest.match(/<[^>]*>/g) || []).map(x => x.slice(1,-1).trim());
+        const cb = carry.rest.replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+        (books[carry.b] = books[carry.b] || {})['1:1'] = { t: ct.join(' / '), x: cb };
+        lastB = carry.b; lastC = 1; lastV = 1;
+      }
+    }else{
+      // 절 번호가 빠진 줄 — 앞 절의 이어짐으로 처리한다
+      const m2 = line.match(/^([가-힣]{1,2})(\d+):\s*(.*)$/);
+      if(!m2 || !ABBR[m2[1]]) continue;
+      const b = m2[1], c = +m2[2];
+      const titles = (m2[3].match(/<[^>]*>/g) || []).map(t => t.slice(1,-1).trim());
+      const body = m2[3].replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
+      const key = c+':'+lastV;
+      if(b === lastB && books[b] && books[b][key]){
+        books[b][key].x += ' ' + body;
+        if(titles.length) pend = titles.join(' / ');
+      }else{
+        (books[b] = books[b] || {})[c+':1'] = { t: titles.join(' / '), x: body };
+        lastB = b; lastC = c; lastV = 1;
+      }
+    }
+    if(onProgress && i % 4000 === 0) onProgress(i / lines.length);
+  }
+  return books;
+}
+
+/* ---- 직렬화: "c:v\t소제목\t본문" 줄 묶음 ---- */
+function serializeBook(map){
+  const keys = Object.keys(map).sort((a,b) => {
+    const [ac,av] = a.split(':').map(Number), [bc,bv] = b.split(':').map(Number);
+    return ac - bc || av - bv;
+  });
+  return keys.map(k => k + '\t' + (map[k].t || '') + '\t' + map[k].x).join('\n');
+}
+function deserializeBook(blob){
+  const map = {};
+  blob.split('\n').forEach(line => {
+    if(!line) return;
+    const i = line.indexOf('\t'); if(i < 0) return;
+    const j = line.indexOf('\t', i+1);
+    map[line.slice(0,i)] = { t: line.slice(i+1, j < 0 ? undefined : j), x: j < 0 ? '' : line.slice(j+1) };
+  });
+  return map;
+}
+function chunkBlob(blob){
+  const out = [];
+  for(let i=0;i<blob.length;i+=CHUNK){
+    let end = Math.min(i+CHUNK, blob.length);
+    if(end < blob.length){
+      const nl = blob.lastIndexOf('\n', end);
+      if(nl > i) end = nl;
+    }
+    out.push(blob.slice(i, end));
+    i = end - CHUNK;
+  }
+  return out;
+}
+
+/* ---- 업로드 ---- */
+/* 문서 아이디는 반드시 ASCII 여야 한다 (경로 세그먼트 제약). 책은 번호로 쓴다. */
+const bookIdx = {}; BOOKS.forEach((b,i) => { bookIdx[b.a] = i; });
+const partId = (abbr, n) => 'b' + bookIdx[abbr] + '-' + n;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function setDocRetry(path, body){
+  let wait = 700;
+  for(let tryN = 0; tryN < 4; tryN++){
+    try{ await DB.doc(path).set(body); return null; }
+    catch(err){
+      const code = (err && err.code) || 'unknown';
+      if(code === 'resource_exhausted' || code === 'unavailable'){
+        await sleep(wait); wait *= 2; continue;
+      }
+      return code;                       // 고쳐야 하는 오류 — 재시도해도 소용없다
+    }
+  }
+  return 'resource_exhausted';
+}
+
+async function importBible(){
+  const f = document.getElementById('bibleFile').files[0];
+  const err = document.getElementById('bibleErr');
+  const wrap = document.getElementById('bibleProgWrap'), bar = document.getElementById('bibleProg');
+  const st = document.getElementById('bibleStatus');
+  err.textContent = '';
+  if(!f){ err.textContent = '먼저 텍스트 파일을 선택해주세요.'; return; }
+  const ver = (document.getElementById('bibleVer').value || '').trim() || '성경';
+
+  wrap.classList.add('on'); bar.style.width = '2%';
+  st.textContent = '파일을 읽는 중입니다…';
+
+  let raw;
+  try{
+    const buf = await f.arrayBuffer();
+    try{ raw = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+    catch(e){ raw = new TextDecoder('euc-kr').decode(buf); }
+  }catch(e){
+    err.textContent = '파일을 읽지 못했습니다. UTF-8 또는 EUC-KR 텍스트 파일인지 확인해주세요.';
+    wrap.classList.remove('on'); return;
+  }
+
+  st.textContent = '본문을 분석하는 중입니다…';
+  await sleep(20);
+  const books = parseBibleText(raw, p => { bar.style.width = (2 + p*18) + '%'; });
+  const names = Object.keys(books).filter(b => bookIdx[b] !== undefined);
+  if(!names.length){
+    err.textContent = '성경 형식을 찾지 못했습니다. "창1:1 본문" 형식의 텍스트인지 확인해주세요.';
+    wrap.classList.remove('on'); return;
+  }
+
+  /* ① 먼저 이 기기에 저장한다 — 저장소 연결과 무관하게 바로 쓸 수 있게 */
+  const at = Date.now();
+  const parts = [];
+  for(const b of names){
+    const chunks = chunkBlob(serializeBook(books[b]));
+    await idbSet('bk:'+b, chunks.join('\n'));
+    chunks.forEach((d, i) => parts.push({ id: partId(b, i), b, d }));
+    BIB.mem[b] = books[b];
+  }
+  BIB.ver = ver; BIB.at = at; BIB.ready = true;
+  LS.set('bibleLocal', { ver, at, n: names.length });
+  bar.style.width = '24%';
+  st.textContent = ver + ' · ' + names.length + '권을 이 기기에 저장했습니다. 이제 교회 저장소로 올립니다…';
+  if(document.getElementById('qt').classList.contains('on')) renderQT();
+  if(route === 'bible') renderBible();
+
+  /* ② 교회 저장소로 올린다 — 실패해도 위 결과는 남는다 */
+  if(!DB){
+    st.textContent = ver + ' 본문이 이 기기에서 작동합니다. 다만 교회 저장소에 연결되지 않아 다른 교인에게는 아직 보이지 않습니다.';
+    wrap.classList.remove('on'); return;
+  }
+  await uploadParts(parts, ver, at, bar, st, err);
+}
+
+async function uploadParts(parts, ver, at, bar, st, err){
+  LS.set('bibleQueue', { ver, at, parts });
+  for(let i=0;i<parts.length;i++){
+    const code = await setDocRetry('bible/'+parts[i].id, { b: parts[i].b, d: parts[i].d, ver, at });
+    if(code){
+      LS.set('bibleQueue', { ver, at, parts: parts.slice(i) });
+      err.textContent = (i+1) + '번째 묶음에서 멈췄습니다 (' + code + '). ' +
+        (code === 'resource_exhausted' ? '잠시 뒤 “이어서 올리기”를 눌러주세요.'
+         : code === 'quota_exceeded' ? '저장소 문서 수가 가득 찼습니다.'
+         : '편집 권한이 있는 계정인지 확인해주세요.');
+      document.getElementById('resumeBtn').style.display = 'block';
+      st.textContent = '이 기기에서는 정상 작동합니다. 남은 ' + (parts.length - i) + '개 묶음만 다시 올리면 됩니다.';
+      return;
+    }
+    bar.style.width = (24 + (i+1)/parts.length*74) + '%';
+    st.textContent = '교회 저장소로 올리는 중… ' + (i+1) + ' / ' + parts.length;
+    await sleep(140);                    // 호출 속도 제한을 피한다
+  }
+  const code = await setDocRetry('bible/meta', { ver, at, parts: parts.length });
+  LS.del('bibleQueue');
+  bar.style.width = '100%';
+  document.getElementById('resumeBtn').style.display = 'none';
+  st.textContent = code
+    ? '본문은 올라갔지만 마무리 표시에 실패했습니다 (' + code + '). 한 번 더 시도해주세요.'
+    : ver + ' 본문이 교회 저장소에 올라갔습니다. 이제 모든 교인 화면에 본문이 보입니다.';
+  toast('성경 본문을 올렸습니다');
+}
+
+async function resumeUpload(){
+  const q = LS.get('bibleQueue', null);
+  const err = document.getElementById('bibleErr'), st = document.getElementById('bibleStatus');
+  const wrap = document.getElementById('bibleProgWrap'), bar = document.getElementById('bibleProg');
+  err.textContent = '';
+  if(!q || !q.parts || !q.parts.length){ err.textContent = '이어서 올릴 내용이 없습니다.'; return; }
+  if(!DB){ err.textContent = '교회 저장소에 연결되어 있지 않습니다.'; return; }
+  wrap.classList.add('on');
+  await uploadParts(q.parts, q.ver, q.at, bar, st, err);
+}
+
+/* ---- 읽기 ---- */
+async function getBook(abbr){
+  if(BIB.mem[abbr]) return BIB.mem[abbr];
+  if(!BIB.ready) return null;
+  const local = await idbGet('bk:'+abbr);
+  if(local){ BIB.mem[abbr] = deserializeBook(local); return BIB.mem[abbr]; }
+  if(!DB || bookIdx[abbr] === undefined) return null;
+  try{
+    const snap = await DB.collection('bible').where('b','==',abbr).get();
+    if(!snap.size) return null;
+    const blob = snap.docs
+      .map(d => ({ n: +(d.id.split('-')[1] || 0), d: d.data().d || '' }))
+      .sort((a,b) => a.n - b.n).map(o => o.d).join('\n');
+    idbSet('bk:'+abbr, blob);
+    BIB.mem[abbr] = deserializeBook(blob);
+    return BIB.mem[abbr];
+  }catch(e){ return null; }
+}
+
+/* 참조 문자열 → {b1,c1,v1,b2,c2,v2}  (v 가 null 이면 장 전체) */
+function parseRef(ref){
+  if(!ref) return null;
+  const s = ref.trim();
+  let m;
+  // 전 11:9-12:8
+  if((m = s.match(/^([가-힣]{1,3})\s*(\d+):(\d+)\s*-\s*(\d+):(\d+)$/)) && lookupBook(m[1])){
+    const b = lookupBook(m[1]).a;
+    return { b1:b, c1:+m[2], v1:+m[3], b2:b, c2:+m[4], v2:+m[5] };
+  }
+  // 창 3:1-13 / 창 3:1
+  if((m = s.match(/^([가-힣]{1,3})\s*(\d+):(\d+)(?:\s*-\s*(\d+))?$/)) && lookupBook(m[1])){
+    const b = lookupBook(m[1]).a;
+    return { b1:b, c1:+m[2], v1:+m[3], b2:b, c2:+m[2], v2: m[4] ? +m[4] : +m[3] };
+  }
+  // 옵 1-욘 4
+  if((m = s.match(/^([가-힣]{1,3})\s*(\d+)\s*-\s*([가-힣]{1,3})\s*(\d+)$/)) && lookupBook(m[1]) && lookupBook(m[3])){
+    return { b1:lookupBook(m[1]).a, c1:+m[2], v1:null, b2:lookupBook(m[3]).a, c2:+m[4], v2:null };
+  }
+  // 창 1-4
+  if((m = s.match(/^([가-힣]{1,3})\s*(\d+)\s*-\s*(\d+)$/)) && lookupBook(m[1])){
+    const b = lookupBook(m[1]).a;
+    return { b1:b, c1:+m[2], v1:null, b2:b, c2:+m[3], v2:null };
+  }
+  // 딛-몬
+  if((m = s.match(/^([가-힣]{1,4})\s*-\s*([가-힣]{1,4})$/)) && lookupBook(m[1]) && lookupBook(m[2])){
+    const a = lookupBook(m[1]), z = lookupBook(m[2]);
+    return { b1:a.a, c1:1, v1:null, b2:z.a, c2:z.c, v2:null };
+  }
+  // 유다서 / 창 3
+  if((m = s.match(/^([가-힣]{1,4})(?:\s*(\d+))?$/)) && lookupBook(m[1])){
+    const a = lookupBook(m[1]);
+    return m[2] ? { b1:a.a, c1:+m[2], v1:null, b2:a.a, c2:+m[2], v2:null }
+                : { b1:a.a, c1:1, v1:null, b2:a.a, c2:a.c, v2:null };
+  }
+  return null;
+}
+
+/* 참조 → 절 배열 [{b,c,v,t,x}] */
+async function getPassage(ref){
+  const spec = parseRef(ref);
+  if(!spec || !BIB.ready) return null;
+  const i1 = BOOKS.findIndex(b => b.a === spec.b1), i2 = BOOKS.findIndex(b => b.a === spec.b2);
+  if(i1 < 0 || i2 < 0 || i2 < i1) return null;
+  const out = [];
+  for(let i=i1;i<=i2;i++){
+    const meta = BOOKS[i], map = await getBook(meta.a);
+    if(!map) continue;
+    const from = i === i1 ? spec.c1 : 1;
+    const to   = i === i2 ? spec.c2 : meta.c;
+    for(let c=from;c<=to;c++){
+      for(let v=1;v<=200;v++){
+        if(i === i2 && c === spec.c2 && spec.v2 && v > spec.v2) break;
+        const o = map[c+':'+v];
+        if(!o) continue;                       // 절이 합쳐진 판본을 건너뛴다
+        if(i === i1 && c === spec.c1 && spec.v1 && v < spec.v1) continue;
+        out.push({ b: meta.a, bn: meta.n, c, v, t: o.t, x: o.x });
+      }
+    }
+  }
+  return out.length ? out : null;
+}
+
+/* 절 배열 → HTML */
+function paintVerses(el, verses, ref, fallbackNote){
+  el.innerHTML = '';
+  if(!verses){
+    el.innerHTML = '<div class="note">' + esc(fallbackNote) + '</div>';
+    el.dataset.copyText = '';
+    return;
+  }
+  let lastCh = null, html = '';
+  verses.forEach(o => {
+    const chKey = o.b + o.c;
+    if(chKey !== lastCh){ html += '<span class="ch">' + esc(o.bn + ' ' + o.c + '장') + '</span>'; lastCh = chKey; }
+    if(o.t) html += '<span class="ti">' + esc(o.t) + '</span>';
+    html += '<p><span class="vn">' + o.v + '</span>' + esc(o.x) + '</p>';
+  });
+  el.innerHTML = html;
+  el.dataset.copyText = versesToText(verses, ref);
+}
+function versesToText(verses, ref){
+  if(!verses || !verses.length) return '';
+  let out = ref ? expand(ref) + '\n' : '';
+  let lastCh = null;
+  verses.forEach(o => {
+    const chKey = o.b + o.c;
+    if(chKey !== lastCh){ out += (out.trim() ? '\n' : '') + o.bn + ' ' + o.c + '장\n'; lastCh = chKey; }
+    out += o.v + '. ' + o.x + '\n';
+  });
+  return out.trim();
+}
+/* 길게 누르면 화면에 표시된 본문 전체를 복사한다 (스크롤은 그대로 동작) */
+function attachLongPressCopy(el){
+  if(!el || el.dataset.lpBound) return;
+  el.dataset.lpBound = '1';
+  const THRESH = 10, HOLD = 550;
+  let timer = null, sx = 0, sy = 0, moved = false;
+  const begin = (x,y) => {
+    moved = false; sx = x; sy = y;
+    timer = setTimeout(doCopy, HOLD);
+  };
+  const track = (x,y) => {
+    if(Math.abs(x-sx) > THRESH || Math.abs(y-sy) > THRESH){ moved = true; clearTimeout(timer); }
+  };
+  const cancel = () => clearTimeout(timer);
+  const doCopy = async () => {
+    const text = el.dataset.copyText;
+    if(!text) return;
+    try{
+      await navigator.clipboard.writeText(text);
+      if(navigator.vibrate) navigator.vibrate(12);
+      toast('본문을 복사했습니다');
+    }catch(e){ toast('이 브라우저에서는 복사를 지원하지 않습니다'); }
+  };
+  el.addEventListener('touchstart', e => { const t=e.touches[0]; begin(t.clientX,t.clientY); }, {passive:true});
+  el.addEventListener('touchmove',  e => { const t=e.touches[0]; track(t.clientX,t.clientY); }, {passive:true});
+  el.addEventListener('touchend', cancel);
+  el.addEventListener('touchcancel', cancel);
+  el.addEventListener('mousedown', e => begin(e.clientX,e.clientY));
+  el.addEventListener('mousemove', e => { if(timer) track(e.clientX,e.clientY); });
+  el.addEventListener('mouseup', cancel);
+  el.addEventListener('mouseleave', cancel);
+}
+function headingsOf(verses, max){
+  if(!verses) return [];
+  const out = [];
+  verses.forEach(o => { if(o.t){ o.t.split(' / ').forEach(t => { const c = t.replace(/\([^)]*\)/g,'').trim(); if(c && out.indexOf(c) < 0) out.push(c); }); } });
+  return out.slice(0, max || 4);
+}
+
+/* ══════════════════════════════════════════════
+   생각을 넓히는 질문 — 본문 장르에 맞춰 매일 달라진다
+   ══════════════════════════════════════════════ */
+const WIDEN = {
+  '율법서':[
+    '이 규례가 그 시대 사람들에게 어떤 보호가 되었을지 상상해보세요. 오늘 우리 공동체에서는 무엇이 그런 역할을 합니까?',
+    '하나님이 굳이 이렇게까지 자세하게 말씀하신 이유는 무엇일까요?',
+    '이 말씀이 없었다면 이스라엘은 어떤 백성이 되었을까요?',
+    '여기서 요구되는 거룩함을 내 일터와 가정의 언어로 바꾸면 무엇이 됩니까?',
+    '이 본문은 훗날 예수님에게서 어떻게 완성됩니까?'
+  ],
+  '역사서':[
+    '이 사건을 당시 평범한 백성의 자리에서 본다면 무엇이 가장 두려웠을까요?',
+    '본문에 이름 없이 스쳐 지나가는 사람들은 이 일을 어떻게 겪었을까요?',
+    '하나님이 침묵하시는 것처럼 보이는 대목이 있습니까? 그때 무슨 일이 벌어지고 있었을까요?',
+    '이 선택이 다음 세대에 어떤 흔적을 남겼을지 짚어보세요.',
+    '우리 교회가 이 이야기 속 한 인물이라면 지금 어디쯤 서 있습니까?'
+  ],
+  '시가서':[
+    '이런 감정까지 하나님께 소리 내어 말할 수 있다는 것은 무엇을 뜻합니까?',
+    '지금 내 주변에 이 기도를 대신 드려주어야 할 사람이 있습니까?',
+    '이 고백을 쓴 사람은 어떤 형편이었을까요? 그 자리에서 이 말이 나왔다는 것이 놀랍지 않습니까?',
+    '이 본문을 슬픔 가운데 있는 사람에게 읽어준다면 어느 구절을 골라주시겠습니까?',
+    '찬양과 탄식이 한 책에 나란히 놓여 있는 이유는 무엇일까요?'
+  ],
+  '선지서':[
+    '이 경고를 들은 사람들은 스스로를 어떤 사람이라 여기고 있었을까요?',
+    '오늘 우리 사회에서 같은 말을 한다면 누구를 향하게 될까요?',
+    '심판의 말씀 속에 숨어 있는 하나님의 마음은 무엇입니까?',
+    '이 약속은 어디에서 이루어졌고, 아직 남아 있는 부분은 무엇입니까?',
+    '내가 듣고 싶지 않은 말이 이 본문에 있다면 어느 구절입니까?'
+  ],
+  '복음서':[
+    '예수님의 이 말씀을 처음 들은 사람들은 왜 놀랐을까요?',
+    '이 장면에서 예수님이 하지 않으신 일은 무엇입니까? 그것도 하나의 메시지입니다.',
+    '내가 그 자리에 있었다면 어느 인물에 가장 가까웠을까요?',
+    '이 말씀을 오늘 우리 동네에서 하신다면 어떤 예를 드셨을까요?',
+    '제자들이 끝내 이해하지 못한 것은 무엇이고, 나는 무엇을 이해하지 못하고 있습니까?'
+  ],
+  '서신서':[
+    '이 편지를 받은 교회는 어떤 문제를 겪고 있었을까요?',
+    '이 권면이 필요 없는 공동체라면 어떤 모습일까요?',
+    '이 가르침을 한 문장으로 줄이면 무엇입니까? 그 문장이 내 삶에서 시험받는 자리는 어디입니까?',
+    '믿는 내용과 사는 방식이 여기서 어떻게 이어지고 있습니까?',
+    '이 말이 나 한 사람이 아니라 우리 공동체에게 쓰인 것이라면 무엇이 달라집니까?'
+  ],
+  '예언서':[
+    '이 환상을 처음 읽은 박해받던 성도들에게 이 장면은 어떤 위로였을까요?',
+    '무섭게 보이는 장면 뒤에 놓인 약속은 무엇입니까?',
+    '이 본문이 그리는 끝을 믿는다면, 오늘 무엇을 덜 두려워해도 됩니까?'
+  ]
+};
+const WIDEN_ANY = [
+  '이 본문을 처음 듣는 사람에게 한 문장으로 전한다면 무엇이라고 하시겠습니까?',
+  '이 말씀이 사실이라면 우리 집의 무엇이 달라져야 합니까?',
+  '이 본문에서 내가 가장 이해하기 어려운 부분은 어디입니까? 그 질문을 그대로 적어두세요.'
+];
+function widenQ(date, book){
+  const pool = (book && WIDEN[book.g]) ? WIDEN[book.g].concat(WIDEN_ANY) : WIDEN_ANY;
+  const d = parse(date);
+  const n = Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000);
+  return pool[n % pool.length];
+}
+
+/* ══════════════════════════════════════════════
+   배지 · 트로피 · 배지 자랑(나눔)
+   ══════════════════════════════════════════════ */
+let CHEERS = {};
+
+/* 책 → 완독에 필요한 날짜 목록 (리딩지저스 읽기범위 기준) */
+const bookDates = {};
+Object.keys(DAYS).forEach(date => {
+  const spec = parseRef(DAYS[date].read);
+  if(!spec) return;
+  const i1 = BOOKS.findIndex(b => b.a === spec.b1), i2 = BOOKS.findIndex(b => b.a === spec.b2);
+  if(i1 < 0 || i2 < 0) return;
+  for(let i=i1;i<=i2;i++){
+    const a = BOOKS[i].a;
+    (bookDates[a] = bookDates[a] || []).push(date);
+  }
+});
+
+const BOOK_BADGES = BOOKS.map((b,i) => ({ id:'book_'+i, icon:'📖', name:b.n+' 완독', desc:b.n+'을 전부 읽고 완료 표시했어요', abbr:b.a }));
+const BADGES = [
+  { id:'streak7',     icon:'🔥',    name:'7일 연속',      desc:'주일을 빼고 7일 연속 QT를 완료했어요' },
+  { id:'streak30',    icon:'🔥🔥',  name:'30일 연속',     desc:'주일을 빼고 30일 연속 QT를 완료했어요' },
+  { id:'streak100',   icon:'🔥🔥🔥', name:'100일 연속',    desc:'주일을 빼고 100일 연속 QT를 완료했어요' },
+  { id:'dawn10',      icon:'🌄',    name:'새벽지기',       desc:'오전 5시~7시 사이에 QT를 10번 저장했어요' },
+  { id:'comeback',    icon:'🌱',    name:'다시 시작',      desc:'3일 이상 쉬었다가 다시 QT를 시작했어요' },
+  { id:'firstShare',  icon:'📣',    name:'첫 나눔',        desc:'묵상을 처음으로 공동체와 나눴어요' },
+  { id:'firstComment',icon:'💬',    name:'첫 댓글',        desc:'다른 교인의 묵상에 처음으로 댓글을 남겼어요' },
+  { id:'prayed10',    icon:'🙏',    name:'기도 응원 10회', desc:'내 묵상에 기도했어요를 10번 받았어요' },
+  { id:'otDone',      icon:'📚',    name:'구약 완독',      desc:'구약 39권을 모두 완독했어요' },
+  { id:'ntDone',      icon:'📗',    name:'신약 완독',      desc:'신약 27권을 모두 완독했어요' },
+  { id:'wholeBible',  icon:'👑',    name:'2026 성경 일독', desc:'리딩지저스 일정을 처음부터 끝까지 완독했어요' }
+];
+const BADGE_MAP = {};
+BADGES.concat(BOOK_BADGES).forEach(b => BADGE_MAP[b.id] = b);
+const TROPHY_ICON  = { gold:'🏆', silver:'🥈', bronze:'🥉' };
+const TROPHY_LABEL = { gold:'완주', silver:'우수', bronze:'꾸준함' };
+
+/* ---- 계산 ---- */
+function maxStreak(all){
+  let max=0, cur=0, d=parse(FIRST); const end=parse(todayStr());
+  while(d <= end){
+    if(d.getDay() !== 0){
+      const ds = ymd(d);
+      if(all[ds] && all[ds].completed){ cur++; if(cur>max) max=cur; }
+      else cur = 0;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return max;
+}
+function hasComeback(all){
+  const dates = Object.keys(all);
+  if(!dates.length) return false;
+  let start = dates.sort()[0];              // 실제로 활동을 시작한 날부터만 "쉼"으로 센다
+  let miss=0, d=parse(start); const end=parse(todayStr());
+  while(d <= end){
+    if(d.getDay() !== 0){
+      const ds = ymd(d), hit = all[ds] && all[ds].completed;
+      if(hit){ if(miss>=3) return true; miss=0; } else miss++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return false;
+}
+function dawnCount(all){
+  let n=0;
+  Object.keys(all).forEach(ds => {
+    const r = all[ds];
+    if(r && r.completed && r.updatedAt){
+      const h = new Date(r.updatedAt).getHours();
+      if(h>=5 && h<7) n++;
+    }
+  });
+  return n;
+}
+function totalPrayersReceived(){
+  let n=0;
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k = localStorage.key(i);
+      if(k && k.indexOf('prayersFor:') === 0) n += LS.get(k, 0);
+    }
+  }catch(e){}
+  return n;
+}
+function notePrayersForMe(date, entries){
+  if(!me || !entries || !entries[me.uid]) return;
+  const cnt = Object.values(reactionMap(entries[me.uid], 'pray')).filter(Boolean).length;
+  LS.set('prayersFor:'+date, cnt);
+}
+
+function earnedBadgeIds(){
+  const all = allMyQT();
+  const earned = new Set();
+  const ms = maxStreak(all);
+  if(ms>=7)   earned.add('streak7');
+  if(ms>=30)  earned.add('streak30');
+  if(ms>=100) earned.add('streak100');
+  if(dawnCount(all) >= 10) earned.add('dawn10');
+  if(hasComeback(all)) earned.add('comeback');
+  if(Object.values(all).some(r => r && r.share && r.share !== 'PRIVATE')) earned.add('firstShare');
+  if(LS.get('badge:firstComment', false)) earned.add('firstComment');
+  if(totalPrayersReceived() >= 10) earned.add('prayed10');
+
+  let otAll = true, ntAll = true;
+  BOOKS.forEach((b,i) => {
+    const dates = bookDates[b.a] || [];
+    if(!dates.length) return;
+    if(dates.every(ds => all[ds] && all[ds].completed)) earned.add('book_'+i);
+    else if(i < 39) otAll = false; else ntAll = false;
+  });
+  if(otAll) earned.add('otDone');
+  if(ntAll) earned.add('ntDone');
+  if(otAll && ntAll) earned.add('wholeBible');
+  return earned;
+}
+
+function monthKeysBeforeThisMonth(){
+  const keys = []; const curKey = todayStr().slice(0,7);
+  const f = parse(FIRST); let d = new Date(f.getFullYear(), f.getMonth(), 1);
+  while(true){
+    const key = d.getFullYear()+'-'+pad(d.getMonth()+1);
+    if(key >= curKey) break;
+    keys.push(key);
+    d.setMonth(d.getMonth()+1);
+  }
+  return keys;
+}
+function computeTrophies(){
+  const all = allMyQT();
+  const out = {};
+  monthKeysBeforeThisMonth().forEach(mk => {
+    let total=0, done=0;
+    Object.keys(DAYS).forEach(ds => {
+      if(ds.slice(0,7) !== mk || !DAYS[ds].read) return;
+      total++; if(all[ds] && all[ds].completed) done++;
+    });
+    if(!total) return;
+    const pct = done/total;
+    const tier = pct>=1 ? 'gold' : pct>=0.8 ? 'silver' : pct>=0.5 ? 'bronze' : null;
+    if(tier) out[mk] = tier;
+  });
+  return out;
+}
+
+/* ---- 새로 딴 배지 감지 + 축하 ---- */
+function checkBadges(){
+  if(!me) return { newBadges:[], newTrophies:[] };
+  const key = 'badges:'+me.uid;
+  const stored = LS.get(key, null);
+  const earned = earnedBadgeIds();
+  const trophies = computeTrophies();
+
+  if(stored === null){
+    const rec = { ids:{}, trophies:{} };
+    earned.forEach(id => rec.ids[id] = Date.now());
+    Object.keys(trophies).forEach(mk => rec.trophies[mk] = trophies[mk]);
+    LS.set(key, rec);
+    const n = earned.size + Object.keys(trophies).length;
+    if(n) toast('배지 '+n+'개를 확인했어요 · 마이페이지에서 보기');
+    return { newBadges:[], newTrophies:[] };
+  }
+
+  const newBadges = [], newTrophies = [];
+  earned.forEach(id => { if(!stored.ids[id]){ stored.ids[id] = Date.now(); newBadges.push(id); } });
+  Object.keys(trophies).forEach(mk => {
+    if(stored.trophies[mk] !== trophies[mk]){ stored.trophies[mk] = trophies[mk]; newTrophies.push(mk); }
+  });
+  if(newBadges.length || newTrophies.length) LS.set(key, stored);
+
+  const msgs = newBadges.map(id => BADGE_MAP[id].icon+' '+BADGE_MAP[id].name+' 배지 획득!')
+    .concat(newTrophies.map(mk => TROPHY_ICON[trophies[mk]]+' '+mk.replace('-','.')+' 트로피 획득!'));
+  if(msgs.length === 1) toast(msgs[0]);
+  else if(msgs.length > 1) toast('새 배지 '+msgs.length+'개를 얻었어요! 마이페이지에서 확인해보세요');
+  return { newBadges, newTrophies };
+}
+
+/* ---- 마이페이지 렌더 ---- */
+function paintBadges(){
+  const grid = document.getElementById('badgeGrid'), bookGrid = document.getElementById('bookBadgeGrid'),
+        strip = document.getElementById('trophyStrip');
+  if(!me){
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:18px 4px">로그인하면 배지를 모을 수 있어요</div>';
+    bookGrid.innerHTML = ''; strip.innerHTML = '';
+    return;
+  }
+  checkBadges();
+  const rec = LS.get('badges:'+me.uid, {ids:{},trophies:{}});
+  const earned = new Set(Object.keys(rec.ids));
+
+  grid.innerHTML = BADGES.map(b => {
+    const on = earned.has(b.id);
+    return '<div class="badge'+(on?' on':'')+'" data-id="'+b.id+'" data-on="'+(on?1:0)+'">'+
+      '<span class="ic">'+b.icon+'</span><span>'+b.name+'</span></div>';
+  }).join('');
+  bookGrid.innerHTML = BOOK_BADGES.map(b => {
+    const on = earned.has(b.id);
+    return '<div class="bbadge'+(on?' on':'')+'" data-id="'+b.id+'" data-on="'+(on?1:0)+'">'+esc(b.abbr)+'</div>';
+  }).join('');
+  document.querySelectorAll('#badgeGrid .badge, #bookBadgeGrid .bbadge').forEach(el => {
+    el.onclick = () => {
+      const id = el.dataset.id;
+      if(el.dataset.on === '1') postCheer(id);
+      else toast(BADGE_MAP[id].desc);
+    };
+  });
+
+  const trophies = Object.entries(rec.trophies||{}).sort((a,b) => b[0].localeCompare(a[0]));
+  strip.innerHTML = trophies.length
+    ? trophies.map(([mk,tier]) => '<div class="trophy"><span class="ic">'+TROPHY_ICON[tier]+'</span><span>'+mk.replace('-','.')+' · '+TROPHY_LABEL[tier]+'</span></div>').join('')
+    : '<div class="empty" style="padding:18px 4px">아직 트로피가 없어요 · 한 달을 꾸준히 채우면 트로피를 받아요</div>';
+}
+
+/* ---- 배지 자랑(나눔) ---- */
+async function postCheer(id){
+  if(!me){ openSheet('sheet-auth'); return; }
+  const b = BADGE_MAP[id]; if(!b) return;
+  if(!DB){ toast('지금은 자랑 기능을 쓸 수 없습니다'); return; }
+  const docId = me.uid+'-'+id;
+  if(CHEERS[docId]){ toast('이미 나눔에 자랑했어요 · 나눔 탭에서 확인해보세요'); tabGo('share'); return; }
+  const ok = await writeDoc('cheers/'+docId, { uid:me.uid, name:me.nick, icon:b.icon, label:b.name, at:Date.now(), hearts:{} });
+  toast(ok ? '나눔에 자랑했어요 🎉' : '자랑하기에 실패했습니다. 잠시 뒤 다시 시도해주세요');
+}
+async function toggleCheer(docId){
+  if(!me){ toast('로그인 후 사용할 수 있습니다'); return; }
+  const c = CHEERS[docId];
+  const mine = c && c.hearts && c.hearts[me.uid];
+  const body = { hearts:{} }; body.hearts[me.uid] = !mine;
+  await writeDoc('cheers/'+docId, body);
+}
+function paintCheers(){
+  const wrap = document.getElementById('cheerStrip');
+  if(!wrap) return;
+  const list = Object.entries(CHEERS).sort((a,b) => (b[1].at||0)-(a[1].at||0)).slice(0,30);
+  if(!list.length){ wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = 'flex';
+  wrap.innerHTML = list.map(([id,c]) => {
+    const cnt = Object.values(c.hearts||{}).filter(Boolean).length;
+    const mineOn = me && c.hearts && c.hearts[me.uid];
+    return '<div class="cheer-chip'+(mineOn?' mine':'')+'" data-id="'+id+'"><span class="ic">'+esc(c.icon)+'</span>'+
+      '<span><b>'+esc(c.name)+'</b> · '+esc(c.label)+'</span><span class="cnt">🎉'+(cnt||'')+'</span></div>';
+  }).join('');
+  wrap.querySelectorAll('.cheer-chip').forEach(el => el.onclick = () => toggleCheer(el.dataset.id));
+}
+
+
+/* ══════════ 시작 ══════════ */
+/* 저장소 연결과 무관하게 반드시 즉시 실행되어야 하는 것들을
+   최상위에 둔다 — 이전 버전에서 파일 선택 버튼이 db 연결 성공
+   콜백 안에 갇혀 있어, 연결이 늦거나 실패하면 버튼이 아예 동작하지
+   않는 문제가 있었다. */
+function connectDB(retries){
+  if(window.claude && typeof window.claude.use === 'function'){
+    window.claude.use('db').then(db => {
+      if(!db) return;
+      DB = db;
+      watchShares(todayStr());
+      subscribeShareRange();
+      DB.collection('content').where('at','>',0).limit(400).onSnapshot(snap => {
+        snap.docs.forEach(doc => { adminOverrides[doc.id] = doc.data(); });
+        renderHome(); if(document.getElementById('qt').classList.contains('on')) renderQT();
+      }, () => {});
+      DB.collection('cheers').where('at','>',0).limit(200).onSnapshot(snap => {
+        CHEERS = {};
+        snap.docs.forEach(doc => { CHEERS[doc.id] = doc.data(); });
+        if(route==='share') paintCheers();
+      }, () => {});
+      DB.doc('bible/meta').get().then(sn => {
+        if(!sn.exists) return;
+        const d = sn.data();
+        BIB.ver = d.ver || '성경'; BIB.at = d.at || 0; BIB.ready = true;
+        const st = document.getElementById('bibleStatus');
+        if(st) st.textContent = BIB.ver + ' 본문이 연결되어 있습니다. 새 파일을 올리면 교체됩니다.';
+        if(document.getElementById('qt').classList.contains('on')) renderQT();
+        if(route === 'bible') renderBible();
+      }).catch(() => {});
+      renderHome();
+    }).catch(() => {});
+  } else if(retries > 0){
+    setTimeout(() => connectDB(retries-1), 250);   // 모바일에서 주입이 늦는 경우를 대비한 재시도
+  }
+}
+function measureTabbar(){
+  const tb = document.getElementById('tabbar');
+  if(tb) document.documentElement.style.setProperty('--tabbar-h', tb.offsetHeight + 'px');
+}
+(function init(){
+  const th = LS.get('theme','');
+  if(th) document.documentElement.setAttribute('data-theme', th);
+  me = LS.get('me', null);
+  const bl = LS.get('bibleLocal', null);
+  if(bl){ BIB.ver = bl.ver; BIB.at = bl.at; BIB.ready = true; }
+  authMode('signup');
+  renderHome(); renderMy();
+  if(!me) setTimeout(() => openSheet('sheet-auth'), 600);
+
+  const q = LS.get('bibleQueue', null);
+  const rb = document.getElementById('resumeBtn');
+  if(rb && q && q.parts && q.parts.length) rb.style.display = 'block';
+
+  /* 인앱 브라우저(카카오톡·네이버·페이스북·인스타그램 등)는 파일 선택을 막는 경우가 많다 */
+  const ua = navigator.userAgent || '';
+  if(/KAKAOTALK|NAVER|Line\/|FBAN|FBAV|Instagram|WhaleAgent\/.*inapp/i.test(ua)){
+    const w = document.getElementById('inAppWarn'); if(w) w.classList.add('on');
+  }
+  const fi = document.getElementById('bibleFile'), fb = document.getElementById('fileBtn');
+  if(fb && fi){
+    fb.addEventListener('click', () => {
+      try{ fi.click(); }
+      catch(e){ document.getElementById('bibleErr').textContent = '이 브라우저에서는 파일 선택이 열리지 않습니다. 다른 브라우저로 열어서 시도해주세요.'; }
+    });
+    fi.addEventListener('change', () => {
+      const f = fi.files[0];
+      document.getElementById('fileOk').textContent = f ? '선택됨: ' + f.name + ' (' + Math.round(f.size/1024) + 'KB)' : '';
+    });
+  }
+
+  measureTabbar();
+  window.addEventListener('resize', measureTabbar);
+  window.addEventListener('orientationchange', () => setTimeout(measureTabbar, 200));
+  connectDB(20);
+
+  /* 텍스트 입력 중에는 키보드가 하단 메뉴를 덮지 않도록 잠시 숨긴다 */
+  const TYPING_TYPES = ['checkbox','radio','date','file','range','color'];
+  function isTypingField(el){
+    if(!el) return false;
+    if(el.tagName === 'TEXTAREA') return true;
+    if(el.tagName === 'INPUT') return !TYPING_TYPES.includes(el.type);
+    return false;
+  }
+  document.addEventListener('focusin', e => {
+    if(isTypingField(e.target)) document.getElementById('tabbar').classList.add('kb-hide');
+  });
+  document.addEventListener('focusout', e => {
+    if(!isTypingField(e.target)) return;
+    setTimeout(() => {                      // 다음 입력창으로 바로 넘어가는 경우 깜빡임 방지
+      if(!isTypingField(document.activeElement)) document.getElementById('tabbar').classList.remove('kb-hide');
+    }, 60);
+  });
+})();
+
+</script>
+</body>
+</html>

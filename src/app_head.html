@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>오늘의 QT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tabbar-h:62px;
+  --ink:#17202B; --sub:#5C6875; --faint:#8D98A4;
+  --paper:#FFFFFF; --mist:#EDF0F4; --line:#DFE4EA;
+  --bronze:#94713F; --bronze-soft:#F3EDE2;
+  --dawn:#1E2A3A; --dawn-2:#2C3C50;
+  --scroll:#FBF8F3;
+  --ok:#3F6B52;
+  --r:14px;
+  --sans:'Noto Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --serif:'Noto Serif KR',Georgia,'Apple SD Gothic Neo',serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#E6EAEF; --sub:#A2AEBB; --faint:#7A8695;
+    --paper:#151C25; --mist:#0D131A; --line:#28323E;
+    --bronze:#C9A468; --bronze-soft:#241E14;
+    --dawn:#0F1620; --dawn-2:#1A2634;
+    --scroll:#12181F; --ok:#7FB295;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#E6EAEF; --sub:#A2AEBB; --faint:#7A8695;
+  --paper:#151C25; --mist:#0D131A; --line:#28323E;
+  --bronze:#C9A468; --bronze-soft:#241E14;
+  --dawn:#0F1620; --dawn-2:#1A2634;
+  --scroll:#12181F; --ok:#7FB295;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--mist); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit}
+img{max-width:100%}
+
+/* ---- shell ---- */
+#app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--paper);
+  position:relative;overflow-x:hidden;
+  box-shadow:0 0 0 1px var(--line);}
+.screen{display:none;padding-bottom:calc(var(--tabbar-h, 62px) + 24px)}
+.screen.on{display:block}
+.pad{padding:0 20px}
+
+/* ---- top bar ---- */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:calc(14px + env(safe-area-inset-top)) 20px 12px;}
+.brand{font-family:var(--serif);font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand span{color:var(--bronze)}
+.iconbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  color:var(--sub);font-size:17px}
+.iconbtn:hover{background:var(--mist)}
+
+/* ---- home hero ---- */
+.hero{padding:6px 20px 26px}
+.greet{font-size:14px;color:var(--sub)}
+.datebig{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:-.02em;margin:2px 0 22px}
+.passage-card{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper)}
+.pc-row{padding:16px 18px}
+.pc-row + .pc-row{border-top:1px solid var(--line)}
+.pc-label{font-size:12px;color:var(--bronze);font-weight:700;letter-spacing:.02em}
+.pc-main{font-family:var(--serif);font-size:25px;font-weight:700;line-height:1.35;margin-top:4px;letter-spacing:-.02em}
+.pc-sub{font-size:13px;color:var(--faint);margin-top:5px}
+.pc-row.dawn{background:var(--bronze-soft)}
+.pc-row.dawn .pc-main{font-size:22px}
+
+.cta{display:block;width:100%;margin:18px 0 0;padding:17px;border-radius:var(--r);
+  background:var(--dawn);color:#F5F1E9;font-weight:700;font-size:16.5px;text-align:center;
+  transition:transform .12s ease}
+.cta:active{transform:scale(.985)}
+.cta.done{background:var(--ok)}
+
+.stat-strip{display:flex;gap:10px;margin-top:12px}
+.stat{flex:1;border:1px solid var(--line);border-radius:var(--r);padding:13px 14px}
+.stat b{font-family:var(--serif);font-size:20px;display:block;line-height:1.2}
+.stat i{font-style:normal;font-size:12px;color:var(--faint)}
+
+.sec{padding:26px 20px 0}
+.sec-h{font-family:var(--serif);font-weight:700;font-size:16px;margin:0 0 12px;
+  display:flex;align-items:baseline;justify-content:space-between}
+.sec-h em{font-style:normal;font-size:12.5px;color:var(--faint);font-family:var(--sans);font-weight:400}
+
+.verse{border-left:3px solid var(--bronze);padding:4px 0 4px 16px}
+.verse p{font-family:var(--serif);font-size:16.5px;line-height:1.85;margin:0 0 8px;letter-spacing:-.01em}
+.verse cite{font-style:normal;font-size:13px;color:var(--bronze);font-weight:700}
+
+.notice{border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;font-size:14px;color:var(--sub)}
+
+/* ---- tabbar ---- */
+.tabbar{position:fixed;bottom:0;left:0;right:0;max-width:520px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  background:color-mix(in srgb,var(--paper) 96%,transparent);
+  backdrop-filter:saturate(150%) blur(12px);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);z-index:75}
+.tab{padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;color:var(--faint)}
+.tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--bronze);font-weight:700}
+.tabbar.kb-hide{display:none}   /* 입력 중(키보드가 떠 있는 동안)에는 잠시 감춘다 */
+
+/* ---- QT focus screen ---- */
+#qt{position:fixed;inset:0;z-index:60;background:var(--scroll);
+  max-width:520px;margin:0 auto;overflow-y:auto;display:none}
+#qt.on{display:block}
+.qt-top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;
+  background:var(--dawn);color:#EFE9DD;
+  padding:calc(12px + env(safe-area-inset-top)) 12px 12px}
+.qt-top button{color:#EFE9DD;width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font-size:16px}
+.qt-top button:disabled{opacity:.3}
+.qt-title{flex:1;text-align:center;font-size:14.5px;font-weight:500;letter-spacing:.01em}
+.qt-body{padding:0 22px calc(var(--tabbar-h, 62px) + 24px)}
+.qt-date{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--bronze);
+  padding:26px 0 0;letter-spacing:-.01em}
+.qt-read{margin:16px 0 0}
+.qt-kicker{font-size:11.5px;font-weight:700;color:var(--bronze);letter-spacing:.04em}
+.qt-range{font-family:var(--serif);font-weight:700;font-size:30px;line-height:1.28;
+  letter-spacing:-.03em;margin:5px 0 0}
+.qt-dawn{margin-top:22px;padding:18px 0 0;border-top:1px solid var(--line)}
+.qt-dawn .qt-range{font-size:25px}
+.scripture{margin-top:16px;font-family:var(--serif);font-size:17.5px;line-height:2.05;
+  letter-spacing:-.01em;white-space:pre-wrap}
+.scripture.empty{font-family:var(--sans);font-size:13.5px;line-height:1.7;color:var(--faint);
+  border:1px dashed var(--line);border-radius:var(--r);padding:14px 16px;white-space:normal}
+.guide{margin:26px 0 0;background:var(--paper);border:1px solid var(--line);
+  border-radius:var(--r);padding:18px}
+.guide h4{margin:0 0 9px;font-size:13px;color:var(--bronze);font-weight:700}
+.guide p{margin:0 0 10px;font-size:15.5px;line-height:1.8;color:var(--ink)}
+.guide p:last-child{margin-bottom:0}
+.hr{height:1px;background:var(--line);margin:30px 0}
+.field{margin-bottom:22px}
+.field label{display:block;font-family:var(--serif);font-weight:700;font-size:16px;margin-bottom:4px}
+.field .hint{font-size:13px;color:var(--faint);margin-bottom:9px}
+textarea{width:100%;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--paper);padding:15px;resize:vertical;line-height:1.85;
+  font-family:var(--serif);font-size:16.5px;letter-spacing:-.01em}
+textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-offset:1px;border-color:transparent}
+#reflection{min-height:190px}
+#prayer{min-height:110px}
+
+.shares{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--paper)}
+.share-opt{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;cursor:pointer}
+.share-opt + .share-opt{border-top:1px solid var(--line)}
+.share-opt input{margin:4px 0 0;accent-color:var(--bronze);width:17px;height:17px;flex:none}
+.share-opt b{display:block;font-weight:500;font-size:15px}
+.share-opt small{color:var(--faint);font-size:12.5px;line-height:1.5;display:block;margin-top:2px}
+.share-opt.sel{background:var(--bronze-soft)}
+
+.donecheck{display:flex;align-items:center;gap:12px;padding:16px;border:1px solid var(--line);
+  border-radius:var(--r);margin:22px 0 14px;cursor:pointer}
+.donecheck input{width:21px;height:21px;accent-color:var(--ok)}
+.donecheck b{font-weight:500}
+.savebar{padding:24px 0 6px}
+.saved-note{text-align:center;font-size:12.5px;color:var(--faint);margin-top:9px;min-height:18px}
+
+/* ---- lists / community ---- */
+.post{border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;margin-bottom:12px}
+.post-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ava{width:32px;height:32px;border-radius:50%;background:var(--bronze-soft);color:var(--bronze);
+  display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;
+  font-family:var(--serif)}
+.post-h b{font-size:14.5px;font-weight:500}
+.post-h small{color:var(--faint);font-size:12px;display:block;line-height:1.3}
+.post-ref{font-size:12.5px;color:var(--bronze);font-weight:700;margin-bottom:6px}
+.post-body{font-family:var(--serif);font-size:16px;line-height:1.85;white-space:pre-wrap;letter-spacing:-.01em}
+.post-acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line)}
+.act{font-size:13px;color:var(--sub);padding:6px 12px;border:1px solid var(--line);border-radius:999px}
+.act.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.cmt{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}
+.cmt-item{font-size:14px;margin-bottom:7px;line-height:1.6}
+.cmt-item b{font-weight:700;margin-right:6px;font-size:13.5px}
+.cmt-form{display:flex;gap:7px;margin-top:9px}
+.cmt-form input{flex:1;border:1px solid var(--line);border-radius:999px;padding:9px 15px;
+  background:var(--paper);font-size:14px}
+.cmt-form button{padding:0 16px;border-radius:999px;background:var(--dawn);color:#F0EBE1;font-size:13.5px;font-weight:700}
+.completed-strip{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+.chip{font-size:13px;padding:6px 12px;border-radius:999px;background:var(--mist);color:var(--sub);
+  border:1px solid transparent}
+.chip.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.filter-note{display:none;align-items:center;justify-content:space-between;gap:8px;
+  background:var(--bronze-soft);border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:var(--bronze)}
+.filter-note button{font-size:12.5px;font-weight:700;text-decoration:underline;color:var(--bronze)}
+.chip b{color:var(--ok);margin-left:4px}
+
+/* ---- 묵상 나눔(카카오톡 등) ---- */
+.cell.pickable{cursor:pointer}
+.cell.sel{outline:2px solid var(--bronze);background:var(--bronze-soft);color:var(--bronze);font-weight:700}
+.selbar{position:fixed;left:12px;right:12px;bottom:calc(var(--tabbar-h, 62px) + 10px);max-width:496px;
+  margin:0 auto;background:var(--dawn);color:#F2EDE4;display:none;align-items:center;
+  justify-content:space-between;gap:10px;padding:13px 16px;z-index:74;border-radius:14px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.selbar.on{display:flex}
+.selbar b{font-size:13.5px;font-weight:500}
+.selbar .sbtns{display:flex;gap:7px;flex:none}
+.selbar button{padding:9px 14px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
+.selbar .go{background:#F2EDE4;color:var(--dawn)}
+.selbar .cancel{background:transparent;color:#F2EDE4;border:1px solid rgba(255,255,255,.35)}
+
+/* ---- bible ---- */
+.seg{display:flex;gap:6px;background:var(--mist);padding:4px;border-radius:11px;margin-bottom:16px}
+.seg button{flex:1;padding:9px;border-radius:8px;font-size:14px;color:var(--sub);font-weight:500}
+.seg button.on{background:var(--paper);color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.07)}
+.booklist{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bookbtn{border:1px solid var(--line);border-radius:10px;padding:13px 6px;font-size:14px;text-align:center}
+.bookbtn:hover{border-color:var(--bronze)}
+.chapgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.chapbtn{border:1px solid var(--line);border-radius:9px;padding:11px 0;font-size:14px;text-align:center;
+  font-family:var(--serif)}
+
+/* ---- calendar ---- */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-head b{font-family:var(--serif);font-size:18px}
+.cal-head button{width:34px;height:34px;border-radius:9px;color:var(--sub);border:1px solid var(--line)}
+.cal-head button:disabled{opacity:.35}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{text-align:center;font-size:11px;color:var(--faint);padding-bottom:6px}
+.cal .dow.sun{color:#B4544C}
+.cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;font-size:13px;color:var(--sub)}
+.cell.blank{visibility:hidden}
+.cell.has{background:var(--bronze-soft);color:var(--bronze);font-weight:700}
+.cell.today{outline:1.5px solid var(--dawn);outline-offset:-1.5px}
+.cell .dot{width:4px;height:4px;border-radius:50%;background:var(--bronze)}
+
+/* ---- my page ---- */
+.profile{display:flex;align-items:center;gap:14px;padding:6px 0 20px}
+.profile .ava{width:54px;height:54px;font-size:19px}
+.profile b{font-family:var(--serif);font-size:19px;display:block}
+.profile small{color:var(--faint);font-size:13px}
+.week-dots{display:flex;gap:7px;margin-top:10px}
+.wd{flex:1;text-align:center}
+.wd span{display:block;font-size:11px;color:var(--faint);margin-bottom:5px}
+.wd i{display:block;height:30px;border-radius:8px;background:var(--mist);
+  display:grid;place-items:center;font-style:normal;font-size:13px;color:var(--faint)}
+.wd i.on{background:var(--ok);color:#fff}
+.menu{border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:18px}
+.menu button{display:flex;width:100%;justify-content:space-between;align-items:center;
+  padding:15px 16px;font-size:15px;text-align:left}
+.menu button + button{border-top:1px solid var(--line)}
+.menu button span{color:var(--faint);font-size:13px}
+
+/* ---- 배지 · 트로피 ---- */
+.badgegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.badge{border:1px solid var(--line);border-radius:12px;padding:13px 5px 11px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:6px}
+.badge .ic{font-size:21px;filter:grayscale(1);opacity:.3}
+.badge.on{background:var(--bronze-soft);border-color:var(--bronze)}
+.badge.on .ic{filter:none;opacity:1}
+.badge span{font-size:10.5px;color:var(--faint);line-height:1.3}
+.badge.on span{color:var(--ink);font-weight:500}
+.bookbadges{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.bbadge{border:1px solid var(--line);border-radius:8px;padding:9px 2px;text-align:center;
+  font-size:11px;color:var(--faint)}
+.bbadge.on{background:var(--bronze-soft);border-color:var(--bronze);color:var(--bronze);font-weight:700}
+.trophystrip{display:flex;gap:9px;overflow-x:auto;padding-bottom:2px}
+.trophy{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;
+  border:1px solid var(--line);border-radius:12px;padding:13px 17px;background:var(--paper)}
+.trophy .ic{font-size:23px}
+.trophy span{font-size:10.5px;color:var(--sub);white-space:nowrap}
+
+/* ---- 배지 자랑(나눔) ---- */
+.cheerstrip{display:none;gap:8px;overflow-x:auto;padding:2px 0 16px;margin-bottom:2px}
+.cheer-chip{flex:none;display:flex;align-items:center;gap:7px;background:var(--bronze-soft);
+  border:1px solid var(--line);border-radius:999px;padding:8px 13px 8px 10px;font-size:12px;white-space:nowrap}
+.cheer-chip .ic{font-size:16px}
+.cheer-chip b{font-weight:700}
+.cheer-chip .cnt{color:var(--bronze);font-weight:700}
+.cheer-chip.mine{outline:1.5px solid var(--bronze)}
+
+/* ---- auth / modal ---- */
+.sheet{position:fixed;inset:0;z-index:80;background:rgba(10,14,20,.5);
+  display:none;align-items:flex-end;justify-content:center}
+.sheet.on{display:flex}
+.sheet-in{background:var(--paper);width:100%;max-width:520px;border-radius:20px 20px 0 0;
+  padding:24px 22px calc(26px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+.sheet-in h3{font-family:var(--serif);font-size:20px;margin:0 0 6px}
+.sheet-in p.lede{color:var(--sub);font-size:14px;margin:0 0 20px;line-height:1.65}
+.inp{width:100%;border:1px solid var(--line);border-radius:11px;padding:14px 15px;
+  background:var(--paper);font-size:16px;margin-bottom:11px}
+.btn{width:100%;padding:15px;border-radius:11px;background:var(--dawn);color:#F2EDE4;
+  font-weight:700;font-size:15.5px;text-align:center;margin-top:5px}
+.btn.ghost{background:transparent;color:var(--sub);font-weight:500;border:1px solid var(--line)}
+.err{color:#B4544C;font-size:13.5px;min-height:19px;margin:2px 0 0}
+.empty{text-align:center;color:var(--faint);font-size:14px;padding:44px 20px;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  background:var(--dawn);color:#F2EDE4;padding:11px 20px;border-radius:999px;font-size:14px;
+  z-index:100;opacity:0;pointer-events:none;transition:opacity .22s}
+.toast.on{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
+.scroll-x{overflow-x:auto}
+
+/* ---- 접이식 본문 ---- */
+.fold{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);margin-top:15px}
+.fold > summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;font-size:14px;font-weight:500;color:var(--sub)}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary b{color:var(--ink);font-weight:500}
+.arw{color:var(--faint);font-size:11px;transition:transform .18s ease;display:inline-block}
+.fold[open] .arw{transform:rotate(180deg)}
+.fold-in{padding:2px 17px 19px;margin-top:-2px}
+.vs{font-family:var(--serif);font-size:17px;line-height:1.95;letter-spacing:-.012em}
+.vs p{margin:0 0 7px}
+.vs .vn{font-family:var(--sans);font-size:11.5px;font-weight:700;color:var(--bronze);
+  margin-right:6px;vertical-align:.1em}
+.vs .ch{display:block;font-family:var(--sans);font-size:11.5px;font-weight:700;
+  color:var(--faint);letter-spacing:.04em;margin:22px 0 8px;padding-top:14px;border-top:1px solid var(--line)}
+.vs .ch:first-child{margin-top:0;padding-top:0;border-top:none}
+.vs .ti{display:block;font-weight:700;font-size:15.5px;margin:18px 0 8px;line-height:1.5}
+.vs .ti:first-child{margin-top:0}
+.fold .note{font-family:var(--sans);font-size:13.5px;line-height:1.7;color:var(--faint)}
+.prog{height:5px;background:var(--mist);border-radius:99px;overflow:hidden;margin:12px 0 4px;display:none}
+.prog.on{display:block}
+.prog i{display:block;height:100%;width:0;background:var(--bronze);transition:width .25s ease}
+.filebtn{display:block;width:100%;border:1px dashed var(--bronze);border-radius:11px;padding:18px 16px;
+  text-align:center;font-size:15px;font-weight:700;color:var(--bronze);cursor:pointer;margin-bottom:8px;
+  background:var(--bronze-soft);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.filebtn small{display:block;font-weight:400;font-size:12px;color:var(--faint);margin-top:4px}
+.fileok{font-size:13px;color:var(--ok);margin:0 0 11px;min-height:17px}
+.inappwarn{display:none;background:#F7E7C4;color:#6B4E12;border-radius:11px;padding:13px 14px;
+  font-size:13px;line-height:1.7;margin-bottom:14px}
+:root[data-theme="dark"] .inappwarn{background:#3A2E12;color:#E9C97A}
+.inappwarn.on{display:block}
+.inappwarn b{display:block;margin-bottom:3px}
+.guide .ask{border-left:2px solid var(--bronze);padding-left:13px;margin:14px 0 0;color:var(--ink)}
+.guide .ask small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:700;
+  color:var(--bronze);margin-bottom:3px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ 홈 ══ -->
+  <section class="screen on" id="s-home">
+    <div class="topbar">
+      <div class="brand">우리교회 <span>QT</span></div>
+      <button class="iconbtn" onclick="go('my')" aria-label="마이페이지">☰</button>
+    </div>
+    <div class="hero">
+      <div class="greet" id="greet"></div>
+      <div class="datebig" id="homeDate"></div>
+      <div class="passage-card">
+        <div class="pc-row">
+          <div class="pc-label">리딩지저스</div>
+          <div class="pc-main" id="homeRead"></div>
+          <div class="pc-sub" id="homeReadSub"></div>
+        </div>
+        <div class="pc-row dawn">
+          <div class="pc-label">새벽본문</div>
+          <div class="pc-main" id="homeDawn"></div>
+          <div class="pc-sub" id="homeDawnSub"></div>
+        </div>
+      </div>
+      <button class="cta" id="homeCta" onclick="openQT(todayStr())">오늘의 QT 시작하기</button>
+      <div class="stat-strip">
+        <div class="stat"><b id="statDone">0</b><i>오늘 QT를 마친 교인</i></div>
+        <div class="stat" onclick="tabGo('log')" style="cursor:pointer"><b id="statMine">0일</b><i>이번 달 나의 QT</i></div>
+      </div>
+    </div>
+    <div class="sec">
+      <h3 class="sec-h">이번 주 암송구절 <em id="weekRangeLabel"></em></h3>
+      <div class="verse"><p id="memVerse"></p><cite id="memRef"></cite></div>
+    </div>
+    <div class="sec">
+      <h3 class="sec-h">알림</h3>
+      <div class="notice" id="homeNotice"></div>
+    </div>
+  </section>
+
+  <!-- ══ 성경 ══ -->
+  <section class="screen" id="s-bible">
+    <div class="topbar"><div class="brand">성경</div></div>
+    <div class="pad">
+      <div id="bibleNav"></div>
+      <div id="bibleView"></div>
+    </div>
+  </section>
+
+  <!-- ══ 나눔 ══ -->
+  <section class="screen" id="s-share">
+    <div class="topbar">
+      <div class="brand">공동체 나눔</div>
+    </div>
+    <div class="pad">
+      <div class="cal-head" style="margin-bottom:16px">
+        <button onclick="shareRangeMove(-1)" aria-label="이전 주">‹</button>
+        <b id="shareRangeLabel"></b>
+        <button onclick="shareRangeMove(1)" id="shareNextBtn" aria-label="다음 주">›</button>
+      </div>
+      <div class="cheerstrip" id="cheerStrip"></div>
+      <h3 class="sec-h" style="margin-top:8px">이번 주 QT를 함께한 사람들 <em id="shareCount"></em></h3>
+      <div class="completed-strip" id="doneChips"></div>
+      <div class="filter-note" id="shareFilterNote" style="display:none">
+        <span></span><button onclick="setShareFilter(null)">전체보기</button>
+      </div>
+      <div id="shareFeed"></div>
+    </div>
+  </section>
+
+  <!-- ══ 기록 ══ -->
+  <section class="screen" id="s-log">
+    <div class="topbar"><div class="brand">QT 기록</div></div>
+    <div class="pad">
+      <div class="cal-head">
+        <button onclick="calMove(-1)" aria-label="이전 달">‹</button>
+        <b id="calLabel"></b>
+        <button onclick="calMove(1)" aria-label="다음 달">›</button>
+      </div>
+      <button class="act" id="selToggle" style="margin-bottom:14px" onclick="toggleSelectMode()">여러 날짜 골라 카카오톡으로 공유</button>
+      <div class="cal" id="cal"></div>
+      <div id="logDetail" style="margin-top:22px"></div>
+    </div>
+  </section>
+
+  <div class="selbar" id="selBar">
+    <b id="selCount">0일 선택됨</b>
+    <div class="sbtns">
+      <button class="cancel" onclick="toggleSelectMode()">취소</button>
+      <button class="go" onclick="shareSelected()">공유하기</button>
+    </div>
+  </div>
+
+  <!-- ══ 마이 ══ -->
+  <section class="screen" id="s-my">
+    <div class="topbar"><div class="brand">마이페이지</div></div>
+    <div class="pad">
+      <div class="profile">
+        <div class="ava" id="myAva">?</div>
+        <div><b id="myName">손님</b><small id="mySub"></small></div>
+      </div>
+      <h3 class="sec-h">이번 주</h3>
+      <div class="week-dots" id="weekDots"></div>
+      <div class="stat-strip" style="margin-top:16px">
+        <div class="stat"><b id="myMonth">0 / 0</b><i>이번 달 완료</i></div>
+        <div class="stat"><b id="myRate">0%</b><i>완료율</i></div>
+        <div class="stat"><b id="myStreak">0일</b><i>연속 기록</i></div>
+      </div>
+      <button class="cta" style="margin-top:16px" onclick="tabGo('log')">📅 나의 QT 기록 보기</button>
+      <button class="btn ghost" style="margin-top:10px" onclick="inviteFriends()">🔗 초대 링크 복사·공유</button>
+
+      <h3 class="sec-h" style="margin-top:26px">나의 배지</h3>
+      <div class="badgegrid" id="badgeGrid"></div>
+
+      <details class="fold" style="margin-top:14px">
+        <summary><b>성경 완독 배지 (66권)</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="bookbadges" id="bookBadgeGrid"></div></div>
+      </details>
+
+      <h3 class="sec-h" style="margin-top:24px">트로피</h3>
+      <div class="trophystrip" id="trophyStrip"></div>
+
+      <div class="menu" style="margin-top:26px">
+        <button onclick="openSheet('sheet-auth')"><b id="authMenuLabel">로그인 / 회원가입</b><span>›</span></button>
+        <button onclick="toggleTheme()">화면 테마<span id="themeLabel">시스템</span></button>
+        <button onclick="openSheet('sheet-admin')" id="adminMenuBtn" style="display:none">관리자<span>일정 · 본문 · 설명</span></button>
+        <button onclick="doLogout()">로그아웃<span>›</span></button>
+      </div>
+      <p style="font-size:12.5px;color:var(--faint);line-height:1.7;margin:20px 0 0">
+        비공개로 저장한 묵상과 기도제목은 이 기기 안에만 남습니다. 공동체 나눔을 선택한 내용만 교회 서버에 저장됩니다.
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ 하단 탭 ══ -->
+  <nav class="tabbar" id="tabbar">
+    <button class="tab on" data-r="home" onclick="tabGo('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>홈</button>
+    <button class="tab" data-r="qtjump" onclick="openQT(todayStr())">
+      <svg viewBox="0 0 24 24"><path d="M12 6.5S9.5 4 4 4v14c5.5 0 8 2.5 8 2.5s2.5-2.5 8-2.5V4c-5.5 0-8 2.5-8 2.5Z"/><path d="M12 6.5v14"/></svg>오늘의 QT</button>
+    <button class="tab" data-r="bible" onclick="tabGo('bible')">
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>성경</button>
+    <button class="tab" data-r="share" onclick="tabGo('share')">
+      <svg viewBox="0 0 24 24"><path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.2"/><path d="M22 20v-2a4 4 0 0 0-3-3.8"/><path d="M16.5 4.2a4 4 0 0 1 0 5.6"/></svg>나눔</button>
+    <button class="tab" data-r="my" onclick="tabGo('my')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c1-4 4-6 7.5-6s6.5 2 7.5 6"/></svg>MY</button>
+  </nav>
+</div>
+
+<!-- ══ QT 집중 화면 ══ -->
+<div id="qt">
+  <div class="qt-top">
+    <button onclick="closeQT()" aria-label="뒤로">←</button>
+    <div class="qt-title" id="qtTitle">오늘의 QT</div>
+    <button onclick="stepQT(-1)" aria-label="이전 날">‹</button>
+    <button onclick="stepQT(1)" id="qtNext" aria-label="다음 날">›</button>
+  </div>
+  <div class="qt-body">
+    <div class="qt-date" id="qtDate"></div>
+    <div class="qt-read">
+      <div class="qt-kicker">리딩지저스 · 오늘 읽을 말씀</div>
+      <div class="qt-range" id="qtRead"></div>
+      <div class="pc-sub" id="qtReadSub"></div>
+      <details class="fold" id="foldRead" open>
+        <summary><b id="sumRead">본문 읽기</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="vs" id="qtReadText"></div></div>
+      </details>
+    </div>
+    <div class="qt-dawn">
+      <div class="qt-kicker">새벽본문 · 오늘 묵상할 말씀</div>
+      <div class="qt-range" id="qtDawn"></div>
+      <details class="fold" id="foldDawn" open>
+        <summary><b id="sumDawn">본문 읽기</b><span class="arw">⌃</span></summary>
+        <div class="fold-in"><div class="vs" id="qtScripture"></div></div>
+      </details>
+    </div>
+    <div class="guide">
+      <h4>오늘의 QT 설명</h4>
+      <div id="qtGuide"></div>
+    </div>
+    <div class="hr"></div>
+    <div class="field">
+      <label for="reflection">묵상</label>
+      <div class="hint">오늘 말씀을 통해 하나님은 어떤 분이신지, 내게 무엇을 말씀하시는지 자유롭게 적어보세요.</div>
+      <textarea id="reflection" placeholder="자유롭게 작성해주세요"></textarea>
+    </div>
+    <div class="field">
+      <label for="prayer">기도제목</label>
+      <div class="hint">오늘 하나님께 드리고 싶은 기도를 적어보세요.</div>
+      <textarea id="prayer" placeholder="한 줄이어도 괜찮습니다"></textarea>
+    </div>
+    <div class="field">
+      <label>공동체와 나누기</label>
+      <div class="hint">언제든지 다시 바꿀 수 있습니다.</div>
+      <div class="shares" id="shareOpts">
+        <label class="share-opt"><input type="radio" name="share" value="PRIVATE" checked>
+          <span><b>나누지 않기</b><small>이 기기에만 저장됩니다. 다른 교인에게 보이지 않습니다.</small></span></label>
+        <label class="share-opt"><input type="radio" name="share" value="COMPLETION_ONLY">
+          <span><b>QT를 했다는 것만 나누기</b><small>묵상 내용은 감추고 이름과 완료 표시만 보입니다.</small></span></label>
+        <label class="share-opt"><input type="radio" name="share" value="CONTENT">
+          <span><b>나의 묵상 내용을 나누기</b><small>묵상 글이 나눔 게시판에 올라갑니다. 기도제목은 따로 선택합니다.</small></span></label>
+      </div>
+      <label class="donecheck" id="prayerShareWrap" style="display:none">
+        <input type="checkbox" id="sharePrayer"><b>기도제목도 함께 나누기</b></label>
+    </div>
+    <label class="donecheck"><input type="checkbox" id="isDone"><b>오늘 QT 완료</b></label>
+    <div class="savebar">
+      <button class="cta" onclick="saveQT()">저장하기</button>
+      <div class="saved-note" id="savedNote"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 로그인 시트 ══ -->
+<div class="sheet" id="sheet-auth" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-in">
+    <h3 id="authTitle">교회 QT 시작하기</h3>
+    <p class="lede">이름과 별명, 4자리 비밀번호만 있으면 됩니다. 나눔 게시판에는 별명이 표시됩니다.</p>
+    <div class="seg" style="margin-bottom:18px">
+      <button id="tabSignup" class="on" onclick="authMode('signup')">회원가입</button>
+      <button id="tabLogin" onclick="authMode('login')">로그인</button>
+    </div>
+    <input class="inp" id="auName" placeholder="이름 (예: 전근식)" autocomplete="name">
+    <input class="inp" id="auNick" placeholder="별명 (나눔에 표시됩니다)" autocomplete="username">
+    <input class="inp" id="auPin" placeholder="숫자 4자리" inputmode="numeric" maxlength="4" autocomplete="current-password">
+    <div class="err" id="auErr"></div>
+    <button class="btn" id="auGo" onclick="doAuth()">가입하고 시작하기</button>
+    <button class="btn ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<!-- ══ 관리자 시트 ══ -->
+<div class="sheet" id="sheet-admin" onclick="if(event.target===this)closeSheet()">
+  <div class="sheet-in">
+    <h3>관리자</h3>
+
+    <h4 style="font-size:15.5px;margin:2px 0 4px">홈 화면 알림</h4>
+    <p class="lede">교인들이 홈 화면에서 보는 공지입니다. 시작·종료를 비워두면 상시 알림으로, 둘 다 채우면 그 기간에만 보입니다.</p>
+    <textarea class="inp" id="adNotice" style="min-height:90px" placeholder="예: 이번 주 특별새벽기도회는 오전 6시에 시작합니다"></textarea>
+    <div style="display:flex;gap:8px">
+      <input class="inp" type="datetime-local" id="adNoticeFrom" style="flex:1;font-size:13.5px">
+      <input class="inp" type="datetime-local" id="adNoticeTo" style="flex:1;font-size:13.5px">
+    </div>
+    <div style="font-size:12px;color:var(--faint);margin:-6px 0 11px">왼쪽: 시작 시각 · 오른쪽: 종료 시각 (선택)</div>
+    <div class="err" id="noticeErr"></div>
+    <button class="btn" onclick="saveNotice()">알림 저장</button>
+
+    <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">날짜별 QT 콘텐츠</h4>
+    <p class="lede">리딩지저스 일정은 교회 핸드북에서 자동으로 불러옵니다. 아래에서 그날의 설명과 본문을 직접 넣거나 고칠 수 있습니다.</p>
+    <input class="inp" type="date" id="adDate" onchange="loadAdmin()">
+    <input class="inp" id="adRead" placeholder="리딩지저스 본문 (예: 창 1-4)">
+    <input class="inp" id="adDawn" placeholder="새벽본문 (예: 창 3:1-13)">
+    <textarea class="inp" id="adText" style="min-height:130px" placeholder="새벽본문 전문을 붙여넣으면 QT 화면에 그대로 보입니다"></textarea>
+    <textarea class="inp" id="adExp" style="min-height:130px" placeholder="오늘의 QT 설명 (3~5문장). 비워두면 자동 생성된 안내문이 보입니다"></textarea>
+    <input class="inp" id="adVerse" placeholder="이주의 암송구절 (예: 딤후 3:15)">
+    <div class="err" id="adErr"></div>
+    <button class="btn" onclick="saveAdmin()">콘텐츠 저장</button>
+
+    <div style="border-top:1px solid var(--line);margin:26px 0 0;padding-top:22px">
+      <h3 style="font-size:17px">성경 본문 불러오기</h3>
+      <p class="lede" id="bibleStatus">교회가 사용 허락을 받은 성경 텍스트 파일을 한 번만 올리면, 이후 모든 교인 화면에 본문이 자동으로 표시됩니다.</p>
+      <div class="inappwarn" id="inAppWarn">
+        <b>지금 카카오톡(또는 앱) 브라우저 안에서 열려 있는 것 같습니다.</b>
+        이 상태에서는 파일을 선택할 수 없습니다. 오른쪽 위 <b>···</b> 또는 <b>⋮</b> 메뉴에서
+        “다른 브라우저로 열기” / “Safari로 열기”를 눌러 다시 시도해주세요.
+      </div>
+      <button type="button" class="filebtn" id="fileBtn">📄 텍스트 파일 선택<small>.txt 파일을 찾아서 눌러주세요</small></button>
+      <input type="file" id="bibleFile" accept=".txt,text/plain,text/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden">
+      <div class="fileok" id="fileOk"></div>
+      <input class="inp" id="bibleVer" placeholder="역본 이름 (예: 개역개정4판)">
+      <div class="prog" id="bibleProgWrap"><i id="bibleProg"></i></div>
+      <div class="err" id="bibleErr"></div>
+      <button class="btn" onclick="importBible()">불러와서 올리기</button>
+      <button class="btn ghost" id="resumeBtn" style="display:none" onclick="resumeUpload()">이어서 올리기</button>
+    </div>
+    <button class="btn ghost" onclick="closeSheet()">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
