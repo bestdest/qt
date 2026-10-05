@@ -5,8 +5,8 @@ dist/qt-site.html 을 만든다.
 
 주의: 이 파일은 claude.ai 아티팩트(Artifact)로 게시되었을 때만 완전히
 동작한다. GitHub Pages 등 일반 정적 호스팅에 그대로 올리면 화면은 뜨지만
-window.claude(db 저장소)가 없어 나눔/관리자/성경 본문 공유/배지 자랑 같은
-서버 저장 기능은 전부 비활성 상태로 시작한다. 자세한 내용은 README 참고.
+window.claude(db·sample 기능)가 없어 나눔/관리자/성경 본문 공유/배지
+자랑/AI 초안 생성 같은 기능은 전부 비활성 상태로 시작한다. README 참고.
 """
 import pathlib
 

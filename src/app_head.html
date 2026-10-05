@@ -142,6 +142,12 @@ img{max-width:100%}
 .guide h4{margin:0 0 9px;font-size:13px;color:var(--bronze);font-weight:700}
 .guide p{margin:0 0 10px;font-size:15.5px;line-height:1.8;color:var(--ink)}
 .guide p:last-child{margin-bottom:0}
+.guide-pending{font-family:var(--sans);font-size:13.5px;color:var(--faint);
+  border:1px dashed var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px!important}
+.aidraft-row{display:flex;gap:8px;margin-bottom:8px}
+.aidraft-row .btn{margin:0;flex:1}
+.aidraft-row .btn.ghost{flex:none;padding:0 18px}
+.ai-status{font-size:12.5px;color:var(--faint);margin:0 0 12px;min-height:16px;line-height:1.6;white-space:pre-wrap}
 .hr{height:1px;background:var(--line);margin:30px 0}
 .field{margin-bottom:22px}
 .field label{display:block;font-family:var(--serif);font-weight:700;font-size:16px;margin-bottom:4px}
@@ -589,13 +595,25 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
     <div class="err" id="noticeErr"></div>
     <button class="btn" onclick="saveNotice()">알림 저장</button>
 
+    <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">이번 주 설명 일괄 입력</h4>
+    <p class="lede">한 주 분량을 한 번에 붙여넣으세요. 각 날짜는 <b>[YYYY-MM-DD]</b> 로 시작해야 합니다.</p>
+    <div class="aidraft-row" id="aidraftRow">
+      <button class="btn" id="aiDraftBtn" style="display:none" onclick="generateWeeklyDraft()">🪄 AI로 이번 주 초안 만들기</button>
+      <button class="btn ghost" id="aiStopBtn" style="display:none" onclick="stopWeeklyDraft()">중단</button>
+    </div>
+    <div class="ai-status" id="aiDraftStatus"></div>
+    <textarea class="inp" id="adBatch" style="min-height:190px;font-family:monospace;font-size:12.5px"
+      placeholder="[2026-09-21]&#10;설명 문단...&#10;Q1: 오늘의 질문&#10;Q2: 생각을 넓히는 질문&#10;&#10;[2026-09-22]&#10;..."></textarea>
+    <div class="err" id="batchErr"></div>
+    <button class="btn" onclick="saveWeeklyBatch()">이번 주 전체 저장</button>
+
     <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">날짜별 QT 콘텐츠</h4>
-    <p class="lede">리딩지저스 일정은 교회 핸드북에서 자동으로 불러옵니다. 아래에서 그날의 설명과 본문을 직접 넣거나 고칠 수 있습니다.</p>
+    <p class="lede">위 일괄 입력 대신, 특정 날짜 하나만 확인하거나 고칠 때 사용하세요.</p>
     <input class="inp" type="date" id="adDate" onchange="loadAdmin()">
     <input class="inp" id="adRead" placeholder="리딩지저스 본문 (예: 창 1-4)">
     <input class="inp" id="adDawn" placeholder="새벽본문 (예: 창 3:1-13)">
     <textarea class="inp" id="adText" style="min-height:130px" placeholder="새벽본문 전문을 붙여넣으면 QT 화면에 그대로 보입니다"></textarea>
-    <textarea class="inp" id="adExp" style="min-height:130px" placeholder="오늘의 QT 설명 (3~5문장). 비워두면 자동 생성된 안내문이 보입니다"></textarea>
+    <textarea class="inp" id="adExp" style="min-height:150px" placeholder="본문 설명을 문단으로 적어주세요.&#10;마지막 두 줄은 이렇게:&#10;Q1: 오늘의 질문&#10;Q2: 생각을 넓히는 질문&#10;&#10;비워두면 방문자에게 '간단 설명 보기' 버튼이 대신 보입니다"></textarea>
     <input class="inp" id="adVerse" placeholder="이주의 암송구절 (예: 딤후 3:15)">
     <div class="err" id="adErr"></div>
     <button class="btn" onclick="saveAdmin()">콘텐츠 저장</button>

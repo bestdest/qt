@@ -322,21 +322,44 @@ async function renderQT(){
   if(ov.text){ dawnEl.className = 'vs'; dawnEl.innerHTML = '<p>' + esc(ov.text).replace(/\n/g,'</p><p>') + '</p>'; dawnEl.dataset.copyText = ov.text; }
   paintGuide(qtDate, readVs, dawnVs);
 }
+function renderGuideItems(el, items){
+  items.forEach(item => {
+    const p = document.createElement('p');
+    if(item.label){ p.className = 'ask'; p.innerHTML = '<small>'+esc(item.label)+'</small>'+esc(item.text); }
+    else p.textContent = item.text;
+    el.appendChild(p);
+  });
+}
+/* 관리자가 쓴 설명 원문을 파싱한다.
+   일반 줄 = 설명 문단, "Q1: ..." = 오늘의 질문, "Q2: ..." = 생각을 넓히는 질문 */
+function parseExp(text){
+  const out = [];
+  text.split(/\n+/).forEach(line => {
+    const l = line.trim(); if(!l) return;
+    let m;
+    if((m = l.match(/^Q1[:：]\s*(.*)$/))) out.push({ label:'오늘의 질문', text:m[1] });
+    else if((m = l.match(/^Q2[:：]\s*(.*)$/))) out.push({ label:'생각을 넓히는 질문', text:m[1] });
+    else out.push({ text:l });
+  });
+  return out;
+}
 function paintGuide(date, readVs, dawnVs){
   const ov = adminOverrides[date] || {};
   const g = document.getElementById('qtGuide');
   g.innerHTML = '';
   if(ov.exp){
-    ov.exp.split(/\n+/).forEach(p => { if(!p.trim()) return;
-      const el = document.createElement('p'); el.textContent = p; g.appendChild(el); });
+    renderGuideItems(g, parseExp(ov.exp));
     return;
   }
-  buildGuide(date, readVs, dawnVs).forEach(item => {
-    const el = document.createElement('p');
-    if(item.label){ el.className = 'ask'; el.innerHTML = '<small>'+esc(item.label)+'</small>'+esc(item.text); }
-    else el.textContent = item.text;
-    g.appendChild(el);
-  });
+  /* 아직 이 날짜의 손으로 쓴 설명이 없다 — 자동 생성본을 눌러야만 보여준다 */
+  g.innerHTML =
+    '<p class="guide-pending">이번 주 설명은 아직 준비 중입니다. 그동안은 간단한 자동 설명을 볼 수 있습니다.</p>'+
+    '<button class="act" id="genGuideBtn">간단 설명 보기</button>';
+  const btn = document.getElementById('genGuideBtn');
+  btn.onclick = () => {
+    g.innerHTML = '<p class="guide-pending">아래는 자동으로 만든 간단 설명입니다.</p>';
+    renderGuideItems(g, buildGuide(date, readVs, dawnVs));
+  };
 }
 document.addEventListener('toggle', e => {
   if(e.target.id === 'foldRead' || e.target.id === 'foldDawn') LS.set(e.target.id+':v2', e.target.open);
@@ -709,6 +732,7 @@ function renderMy(){
   document.getElementById('mySub').textContent = me ? '별명 · '+me.nick : '로그인하면 QT를 기록할 수 있습니다';
   document.getElementById('authMenuLabel').textContent = me ? '계정 정보' : '로그인 / 회원가입';
   document.getElementById('adminMenuBtn').style.display = (me && me.isAdmin) ? 'flex' : 'none';
+  refreshAiDraftUI();
 
   const all = allMyQT(), t = new Date();
   const sun = new Date(t); sun.setDate(t.getDate() - t.getDay());
@@ -755,6 +779,7 @@ function openSheet(id){
     document.getElementById('adNotice').value = nz.text || '';
     document.getElementById('adNoticeFrom').value = toLocalInput(nz.from);
     document.getElementById('adNoticeTo').value = toLocalInput(nz.to);
+    refreshAiDraftUI();
   }
 }
 function closeSheet(){ document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
@@ -833,6 +858,136 @@ function loadAdmin(){
   document.getElementById('adExp').value  = ov.exp  || '';
   document.getElementById('adVerse').value = ov.verse || s.verse || '';
   document.getElementById('adErr').textContent = '';
+}
+/* ══════════ AI 초안 (sample 기능) ══════════ */
+let SAMPLE = null;          // claude.use('sample') 결과 — null이면 기능 숨김
+let aiAbort = null;
+async function initSample(){
+  try{
+    if(window.claude && typeof window.claude.use === 'function') SAMPLE = await window.claude.use('sample');
+  }catch(e){ SAMPLE = null; }
+  refreshAiDraftUI();
+}
+function refreshAiDraftUI(){
+  const btn = document.getElementById('aiDraftBtn');
+  if(!btn) return;
+  btn.style.display = (SAMPLE && me && me.isAdmin) ? 'block' : 'none';
+}
+function currentWeekDates(){
+  const wk = daySchedule(todayStr()).week || todayStr();
+  const out = []; let d = wk;
+  for(let i=0;i<6;i++){ out.push(d); d = addDays(d,1); }
+  return out;
+}
+function stopWeeklyDraft(){ if(aiAbort) aiAbort.abort(); }
+async function generateWeeklyDraft(){
+  if(!SAMPLE){ toast('이 화면에서는 AI 초안 기능을 쓸 수 없습니다'); return; }
+  const btn = document.getElementById('aiDraftBtn'), stopBtn = document.getElementById('aiStopBtn'),
+        status = document.getElementById('aiDraftStatus'), ta = document.getElementById('adBatch');
+  if(ta.value.trim() && !confirm('입력칸에 이미 내용이 있습니다. AI 초안으로 덮어쓸까요?')) return;
+  btn.disabled = true; stopBtn.style.display = 'block';
+  status.textContent = '이번 주 본문을 정리하는 중…';
+
+  const dates = currentWeekDates();
+  const dayBlocks = [];
+  for(const ds of dates){
+    const s = daySchedule(ds), ov = adminOverrides[ds] || {};
+    const read = ov.read || s.read, dawn = ov.dawn || s.dawn;
+    if(!dawn){ dayBlocks.push('['+ds+'] (새벽본문 없음 — 이 날짜는 건너뛰세요)'); continue; }
+    const dawnVs = await getPassage(dawn);
+    const dawnText = dawnVs ? versesToText(dawnVs, dawn) : '(본문을 불러오지 못했습니다: '+dawn+')';
+    let readHead = '';
+    if(read){
+      const heads = headingsOf(await getPassage(read), 6);
+      if(heads.length) readHead = '넓은 읽기 범위의 소제목 흐름: ' + heads.join(' → ') + '\n';
+    }
+    dayBlocks.push('['+ds+']\n리딩지저스 범위: '+(read ? expand(read) : '없음 (이 주는 새벽본문만 있음)')+'\n'+
+      readHead + '새벽본문('+expand(dawn)+') 전문:\n'+dawnText);
+  }
+
+  const prompt =
+'당신은 한국 장로교 교회의 QT(경건의 시간) 웹사이트에 올릴 설명을 쓰는 편집자입니다.\n'+
+'아래는 이번 주 새벽본문 자료입니다. 각 날짜마다, 그 날 새벽본문에 실제로 나오는 사건·표현·전환을 근거로 삼아 짧은 설명과 질문 두 개를 작성하세요.\n\n'+
+'반드시 지킬 것:\n'+
+'- 출력은 아래 형식 그대로만. 코드블록, 마크다운 강조(**, #), 여는 말과 닫는 말은 모두 금지.\n'+
+'- 각 날짜는 정확히 "[YYYY-MM-DD]" 로 시작합니다.\n'+
+'- 그 아래 설명은 3~5문장. 일반론이나 상투적 권면 대신 그 날 본문에서 실제로 벌어지는 일을 근거로 쓰세요. 리딩지저스 범위가 있으면 새벽본문이 그 안에서 어떤 위치인지 한 문장으로 짚으세요.\n'+
+'- 다음 줄에 "Q1: " 로 시작하는 질문 — 본문 속 사건이나 인물의 반응에 기반한 관찰 질문.\n'+
+'- 다음 줄에 "Q2: " 로 시작하는 질문 — 오늘의 삶에 적용해보는 질문.\n'+
+'- 날짜와 날짜 사이는 빈 줄 하나로 구분합니다.\n'+
+'- 어제·오늘 본문이 이어지는 흐름(같은 주제나 표현의 반복)이 보이면 자연스럽게 연결해도 좋습니다.\n\n'+
+'이번 주 자료:\n\n' + dayBlocks.join('\n\n');
+
+  status.textContent = 'Claude가 작성 중입니다… 처음 글자가 나오기까지 최대 1~2분 걸릴 수 있습니다.';
+  aiAbort = new AbortController();
+  try{
+    const res = await SAMPLE(prompt, {
+      modelTier: 'complex',
+      cache: false,
+      signal: aiAbort.signal,
+      onText: u => { status.textContent = '작성 중… ('+u.text.length+'자)'; }
+    });
+    ta.value = res.text.trim();
+    status.textContent = res.truncated
+      ? '초안이 길어서 끝부분이 잘렸을 수 있습니다. 확인 후 부족한 날짜는 직접 고쳐주세요.'
+      : '초안을 만들었습니다. 내용을 확인하고 고친 뒤 "이번 주 전체 저장"을 눌러주세요.';
+    toast('AI 초안이 준비됐습니다');
+  }catch(e){
+    const map = {
+      not_granted:'AI 사용을 허용하지 않으셨습니다. 이 화면에서는 기능이 꺼집니다.',
+      sampling_disabled:'이 계정에서는 AI 기능을 사용할 수 없습니다.',
+      not_declared:'이 사이트에 AI 기능이 켜져 있지 않습니다.',
+      capability_disabled:'지금 화면에서는 AI 기능을 쓸 수 없습니다.',
+      capability_removed:'현재 앱 버전에서는 이 기능을 지원하지 않습니다.',
+      rate_limited:'요청이 많거나 사용 한도에 도달했습니다. 잠시 뒤 다시 눌러주세요.',
+      session_expired:'다시 로그인한 뒤 눌러주세요.',
+      refused:'요청이 거절되었습니다. 잠시 뒤 다시 시도해주세요.',
+      empty_completion:'응답이 비어 있습니다. 다시 눌러주세요.',
+      prompt_too_large:'이번 주 본문 분량이 너무 많아 처리할 수 없습니다.'
+    };
+    status.textContent = e.code === 'cancelled' ? '중단했습니다.'
+      : (map[e.code] || '오류가 발생했습니다 ('+(e.code||'unknown')+'). 다시 눌러주세요.');
+    if(e.text && e.code !== 'refused') ta.value = e.text.trim();
+    if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].indexOf(e.code) >= 0)
+      btn.style.display = 'none';
+  }finally{
+    btn.disabled = false; stopBtn.style.display = 'none'; aiAbort = null;
+  }
+}
+
+/* 이번 주 설명 일괄 입력 — [YYYY-MM-DD]로 시작하는 블록마다 하나씩 저장한다 */
+function parseWeeklyBatch(text){
+  const blocks = text.split(/\n(?=\s*\[\d{4}-\d{2}-\d{2}\])/).map(b => b.trim()).filter(Boolean);
+  const out = [];
+  blocks.forEach(b => {
+    const m = b.match(/^\[(\d{4}-\d{2}-\d{2})\]\s*\n?([\s\S]*)$/);
+    if(!m || !m[2].trim()) return;
+    out.push({ date:m[1], exp:m[2].trim() });
+  });
+  return out;
+}
+async function saveWeeklyBatch(){
+  const err = document.getElementById('batchErr');
+  const raw = document.getElementById('adBatch').value;
+  const items = parseWeeklyBatch(raw);
+  if(!items.length){ err.textContent = '형식을 확인해주세요 — 각 날짜는 [YYYY-MM-DD]로 시작해야 합니다.'; return; }
+  let okCount = 0, failDates = [];
+  for(const it of items){
+    const body = { exp: it.exp, at: Date.now() };
+    if(DB){
+      const ok = await writeDoc('content/'+it.date, body);
+      if(ok){ adminOverrides[it.date] = Object.assign({}, adminOverrides[it.date]||{}, body); okCount++; }
+      else failDates.push(it.date);
+    }else{
+      adminOverrides[it.date] = Object.assign({}, adminOverrides[it.date]||{}, body);
+      okCount++;
+    }
+  }
+  err.textContent = failDates.length ? failDates.join(', ')+' 저장 실패 — 편집 권한을 확인해주세요.' : '';
+  toast(okCount+'개 날짜를 저장했습니다');
+  document.getElementById('adBatch').value = '';
+  if(items.some(it => it.date === qtDate)) renderQT();
+  renderHome();
 }
 async function saveAdmin(){
   const d = document.getElementById('adDate').value;
@@ -953,6 +1108,7 @@ function measureTabbar(){
     });
   }
 
+  initSample();
   measureTabbar();
   window.addEventListener('resize', measureTabbar);
   window.addEventListener('orientationchange', () => setTimeout(measureTabbar, 200));
