@@ -565,7 +565,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
 <div class="sheet" id="sheet-auth" onclick="if(event.target===this)closeSheet()">
   <div class="sheet-in">
     <h3 id="authTitle">교회 QT 시작하기</h3>
-    <p class="lede">이름과 별명, 4자리 비밀번호만 있으면 됩니다. 나눔 게시판에는 별명이 표시됩니다.</p>
+    <p class="lede">이름과 별명, 4자리 비밀번호로 가입을 신청하면 관리자가 승인한 뒤 사용할 수 있습니다. 나눔 게시판에는 별명이 표시됩니다.</p>
     <div class="seg" style="margin-bottom:18px">
       <button id="tabSignup" class="on" onclick="authMode('signup')">회원가입</button>
       <button id="tabLogin" onclick="authMode('login')">로그인</button>
@@ -574,7 +574,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
     <input class="inp" id="auNick" placeholder="별명 (나눔에 표시됩니다)" autocomplete="username">
     <input class="inp" id="auPin" placeholder="숫자 4자리" inputmode="numeric" maxlength="4" autocomplete="current-password">
     <div class="err" id="auErr"></div>
-    <button class="btn" id="auGo" onclick="doAuth()">가입하고 시작하기</button>
+    <button class="btn" id="auGo" onclick="doAuth()">가입 신청하기</button>
     <button class="btn ghost" onclick="closeSheet()">닫기</button>
   </div>
 </div>
@@ -584,7 +584,11 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
   <div class="sheet-in">
     <h3>관리자</h3>
 
-    <h4 style="font-size:15.5px;margin:2px 0 4px">홈 화면 알림</h4>
+    <h4 style="font-size:15.5px;margin:2px 0 4px">회원 관리</h4>
+    <p class="lede" id="memSummary">가입 신청을 승인하거나 거절하고, 관리자 권한을 줄 수 있습니다.</p>
+    <div id="memList" style="margin-bottom:6px"></div>
+
+    <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">홈 화면 알림</h4>
     <p class="lede">교인들이 홈 화면에서 보는 공지입니다. 시작·종료를 비워두면 상시 알림으로, 둘 다 채우면 그 기간에만 보입니다.</p>
     <textarea class="inp" id="adNotice" style="min-height:90px" placeholder="예: 이번 주 특별새벽기도회는 오전 6시에 시작합니다"></textarea>
     <div style="display:flex;gap:8px">
@@ -1425,6 +1429,7 @@ function openSheet(id){
     document.getElementById('adNoticeFrom').value = toLocalInput(nz.from);
     document.getElementById('adNoticeTo').value = toLocalInput(nz.to);
     refreshAiDraftUI();
+    ensureMembersWatch(); renderMembers();
   }
 }
 function closeSheet(){ document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
@@ -1436,7 +1441,7 @@ function authMode(m){
   document.getElementById('tabSignup').classList.toggle('on', m==='signup');
   document.getElementById('tabLogin').classList.toggle('on', m==='login');
   document.getElementById('auName').style.display = m==='signup' ? 'block' : 'none';
-  document.getElementById('auGo').textContent = m==='signup' ? '가입하고 시작하기' : '로그인';
+  document.getElementById('auGo').textContent = m==='signup' ? '가입 신청하기' : '로그인';
   document.getElementById('auErr').textContent = '';
 }
 async function sha(s){
@@ -1452,39 +1457,118 @@ async function doAuth(){
   if(authTab==='signup' && !name){ err.textContent = '이름을 입력해주세요.'; return; }
   if(!nick){ err.textContent = '별명을 입력해주세요.'; return; }
   if(!/^\d{4}$/.test(pin)){ err.textContent = '비밀번호는 숫자 4자리입니다.'; return; }
+  if(!DB){ err.textContent = '서버에 연결 중입니다. 잠시 뒤 다시 시도해주세요.'; return; }
 
   const uid = 'u' + (await sha('nick:'+nick)).slice(0,20);
   const hash = await sha(nick+'|'+pin);
-
-  const isAdmin = nick === ADMIN_NICK;
-
-  if(!DB){
-    me = { uid, name: name || nick, nick, isAdmin };
-    LS.set('me', me); afterAuth(); return;
-  }
   const ref = DB.doc('members/'+uid);
   let snap;
   try{ snap = await ref.get(); }catch(e){ err.textContent = '연결에 문제가 있습니다. 잠시 뒤 다시 시도해주세요.'; return; }
 
   if(authTab === 'signup'){
     if(snap.exists){ err.textContent = '이미 사용 중인 별명입니다. 로그인을 눌러주세요.'; return; }
-    try{ await ref.set({ nick, name, hash, at: Date.now() }); }
+    /* 최초 관리자 지정: 관리자가 한 명도 없을 때만 ADMIN_NICK 가입이 첫 관리자가 된다.
+       그 이후의 관리자 권한은 별명이 아니라 members 문서의 admin 값으로만 정해진다. */
+    let first = false;
+    if(nick === ADMIN_NICK){
+      try{ first = (await DB.collection('members').where('admin','==',true).limit(1).get()).empty; }catch(e){}
+    }
+    const rec = { nick, name, hash, at: Date.now(), status: first ? 'approved' : 'pending', admin: first };
+    try{ await ref.set(rec); }
     catch(e){ err.textContent = '가입에 실패했습니다. 잠시 뒤 다시 시도해주세요.'; return; }
-    me = { uid, name, nick, isAdmin };
+    if(!first){
+      document.getElementById('auPin').value = '';
+      authMode('login');
+      document.getElementById('auErr').textContent = '가입 신청이 접수되었습니다. 관리자가 승인하면 로그인할 수 있습니다.';
+      return;
+    }
+    me = { uid, name, nick, isAdmin: true };
   }else{
     if(!snap.exists){ err.textContent = '등록되지 않은 별명입니다. 회원가입을 눌러주세요.'; return; }
     const d = snap.data();
     if(d.hash !== hash){ err.textContent = '비밀번호가 맞지 않습니다.'; return; }
-    me = { uid, name: d.name || nick, nick, isAdmin };
+    const st = memberStatus(d);
+    if(st === 'pending'){ err.textContent = '관리자의 승인을 기다리고 있습니다. 승인 후 로그인할 수 있습니다.'; return; }
+    if(st === 'rejected'){ err.textContent = '가입이 승인되지 않았습니다. 관리자에게 문의해주세요.'; return; }
+    me = { uid, name: d.name || nick, nick, isAdmin: d.admin === true };
   }
   LS.set('me', me);
   afterAuth();
+}
+/* 예전에 가입한 회원(status 값 없음)은 승인된 것으로 본다 */
+function memberStatus(d){ return d.status || 'approved'; }
+/* 저장된 로그인 정보를 서버 값과 맞춘다: 승인 취소·권한 변경이 바로 반영된다 */
+async function refreshMe(){
+  if(!me || !DB) return;
+  try{
+    const snap = await DB.doc('members/'+me.uid).get();
+    if(!snap.exists || memberStatus(snap.data()) !== 'approved'){
+      me = null; LS.del('me'); renderMy(); renderHome(); toast('계정이 승인 상태가 아닙니다. 다시 로그인해주세요');
+      return;
+    }
+    const d = snap.data(), adm = d.admin === true;
+    if(adm !== me.isAdmin || (d.name && d.name !== me.name)){
+      me.isAdmin = adm; if(d.name) me.name = d.name; LS.set('me', me);
+    }
+    renderMy(); ensureMembersWatch();
+  }catch(e){}
+}
+/* ══════════ 회원 관리 (관리자) ══════════ */
+let MEMBERS = {}, MEM_WATCH = false;
+function ensureMembersWatch(){
+  if(MEM_WATCH || !DB || !me || !me.isAdmin) return;
+  MEM_WATCH = true;
+  DB.collection('members').where('at','>',0).limit(500).onSnapshot(snap => {
+    MEMBERS = {};
+    snap.docs.forEach(doc => { MEMBERS[doc.id] = doc.data(); });
+    renderMembers();
+  }, () => { MEM_WATCH = false; });
+}
+function renderMembers(){
+  const box = document.getElementById('memList'); if(!box) return;
+  const list = Object.keys(MEMBERS).map(id => Object.assign({id}, MEMBERS[id]));
+  const rank = {pending:0, approved:1, rejected:2};
+  list.sort((x,y) => rank[memberStatus(x)] - rank[memberStatus(y)] || (y.at||0) - (x.at||0));
+  const pend = list.filter(m => memberStatus(m) === 'pending').length;
+  const sum = document.getElementById('memSummary');
+  if(sum) sum.textContent = '전체 ' + list.length + '명 · 승인 대기 ' + pend + '명';
+  const btn = document.getElementById('adminMenuBtn');
+  if(btn){ const sp = btn.querySelector('span'); if(sp) sp.textContent = pend ? '승인 대기 ' + pend + '명' : '일정 · 본문 · 설명 · 회원'; }
+  const label = {pending:'승인 대기', approved:'승인됨', rejected:'거절됨'};
+  box.innerHTML = list.map(m => {
+    const st = memberStatus(m), self = me && m.id === me.uid;
+    const b = (txt, fn, ghost) => '<button class="chip" style="cursor:pointer;border:1px solid var(--line)" onclick="'+fn+'(\''+m.id+'\')">'+txt+'</button>';
+    let acts = '';
+    if(st === 'pending') acts = b('승인','memApprove') + b('거절','memReject');
+    else if(st === 'approved' && !self) acts = (m.admin === true ? b('관리자 해제','memToggleAdmin') : b('관리자 지정','memToggleAdmin')) + b('승인 취소','memReject');
+    else if(st === 'rejected') acts = b('승인','memApprove');
+    return '<div style="padding:11px 0;border-top:1px solid var(--line)">' +
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">' +
+      '<div><b>'+esc(m.name||m.nick)+'</b> <span style="color:var(--sub);font-size:13px">'+esc(m.nick)+(self?' (나)':'')+'</span></div>' +
+      '<span style="font-size:12px;color:var(--faint)">'+label[st]+(m.admin===true?' · 관리자':'')+'</span></div>' +
+      (acts ? '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+acts+'</div>' : '') + '</div>';
+  }).join('') || '<div style="color:var(--faint);font-size:13.5px">아직 회원이 없습니다.</div>';
+}
+async function setMember(id, patch){
+  if(!me || !me.isAdmin){ toast('관리자만 할 수 있습니다'); return; }
+  const ok = await writeDoc('members/'+id, Object.assign({ decidedAt: Date.now(), decidedBy: me.uid }, patch));
+  if(!ok) toast('저장에 실패했습니다');
+}
+function memApprove(id){ setMember(id, { status:'approved' }); }
+function memReject(id){
+  if(!confirm('이 회원의 접근을 막고 관리자 권한도 해제할까요?')) return;
+  setMember(id, { status:'rejected', admin:false });
+}
+function memToggleAdmin(id){
+  const m = MEMBERS[id]; if(!m) return;
+  if(id === me.uid){ toast('본인의 권한은 바꿀 수 없습니다'); return; }
+  setMember(id, { admin: m.admin !== true });
 }
 function afterAuth(){
   closeSheet();
   document.getElementById('auPin').value = '';
   toast(me.name+'님, 환영합니다');
-  renderMy(); renderHome();
+  renderMy(); renderHome(); ensureMembersWatch();
 }
 function doLogout(){
   if(!me){ toast('로그인되어 있지 않습니다'); return; }
@@ -2392,6 +2476,7 @@ function connectDB(retries){
     window.claude.use('db').then(db => {
       if(!db) return;
       DB = db;
+      refreshMe();
       watchShares(todayStr());
       subscribeShareRange();
       DB.collection('content').where('at','>',0).limit(400).onSnapshot(snap => {
