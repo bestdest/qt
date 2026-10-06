@@ -565,7 +565,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
 <div class="sheet" id="sheet-auth" onclick="if(event.target===this)closeSheet()">
   <div class="sheet-in">
     <h3 id="authTitle">교회 QT 시작하기</h3>
-    <p class="lede">이름과 별명, 4자리 비밀번호만 있으면 됩니다. 나눔 게시판에는 별명이 표시됩니다.</p>
+    <p class="lede">이름과 별명, 4자리 비밀번호로 가입을 신청하면 관리자가 승인한 뒤 사용할 수 있습니다. 나눔 게시판에는 별명이 표시됩니다.</p>
     <div class="seg" style="margin-bottom:18px">
       <button id="tabSignup" class="on" onclick="authMode('signup')">회원가입</button>
       <button id="tabLogin" onclick="authMode('login')">로그인</button>
@@ -574,7 +574,7 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
     <input class="inp" id="auNick" placeholder="별명 (나눔에 표시됩니다)" autocomplete="username">
     <input class="inp" id="auPin" placeholder="숫자 4자리" inputmode="numeric" maxlength="4" autocomplete="current-password">
     <div class="err" id="auErr"></div>
-    <button class="btn" id="auGo" onclick="doAuth()">가입하고 시작하기</button>
+    <button class="btn" id="auGo" onclick="doAuth()">가입 신청하기</button>
     <button class="btn ghost" onclick="closeSheet()">닫기</button>
   </div>
 </div>
@@ -584,7 +584,11 @@ textarea:focus,input:focus,select:focus{outline:2px solid var(--bronze);outline-
   <div class="sheet-in">
     <h3>관리자</h3>
 
-    <h4 style="font-size:15.5px;margin:2px 0 4px">홈 화면 알림</h4>
+    <h4 style="font-size:15.5px;margin:2px 0 4px">회원 관리</h4>
+    <p class="lede" id="memSummary">가입 신청을 승인하거나 거절하고, 관리자 권한을 줄 수 있습니다.</p>
+    <div id="memList" style="margin-bottom:6px"></div>
+
+    <h4 style="font-size:15.5px;margin:26px 0 4px;padding-top:20px;border-top:1px solid var(--line)">홈 화면 알림</h4>
     <p class="lede">교인들이 홈 화면에서 보는 공지입니다. 시작·종료를 비워두면 상시 알림으로, 둘 다 채우면 그 기간에만 보입니다.</p>
     <textarea class="inp" id="adNotice" style="min-height:90px" placeholder="예: 이번 주 특별새벽기도회는 오전 6시에 시작합니다"></textarea>
     <div style="display:flex;gap:8px">
